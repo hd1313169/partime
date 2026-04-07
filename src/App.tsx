@@ -120,26 +120,39 @@ export default function App() {
   };
 
   const handleUpdateJobs = async (updatedJobs: JobType[]) => {
-    const previousJobsById = new Map(jobs.map(job => [job.id, job]));
-    const nextJobsById = new Map(updatedJobs.map(job => [job.id, job]));
+    const previousJobsById = new Map<string, JobType>(jobs.map(job => [job.id, job]));
+    const nextJobsById = new Map<string, JobType>(updatedJobs.map(job => [job.id, job]));
 
-    const createOps = updatedJobs
-      .filter(job => !previousJobsById.has(job.id))
-      .map(job => salaryApi.createJob(job));
+    const hasJobChanged = (prev: JobType, next: JobType) => {
+      return (
+        prev.name !== next.name ||
+        prev.calcType !== next.calcType ||
+        prev.unitPrice !== next.unitPrice ||
+        prev.color !== next.color
+      );
+    };
 
-    const updateOps = updatedJobs
-      .filter(job => {
-        const prev = previousJobsById.get(job.id);
-        return Boolean(prev) && JSON.stringify(prev) !== JSON.stringify(job);
-      })
-      .map(job => salaryApi.updateJob(job));
+    const jobsToCreate = updatedJobs.filter(job => !previousJobsById.has(job.id));
 
-    const deleteOps = jobs
+    const jobsToUpdate = updatedJobs.filter(job => {
+      const prev = previousJobsById.get(job.id);
+      return Boolean(prev) && hasJobChanged(prev, job);
+    });
+
+    const jobIdsToDelete = jobs
       .filter(job => !nextJobsById.has(job.id))
-      .map(job => salaryApi.deleteJob(job.id));
+      .map(job => job.id);
+
+    const hasAnyChange = jobsToCreate.length > 0 || jobsToUpdate.length > 0 || jobIdsToDelete.length > 0;
+
+    if (!hasAnyChange) {
+      return;
+    }
 
     try {
-      await Promise.all([...createOps, ...updateOps, ...deleteOps]);
+      await Promise.all(jobsToCreate.map(job => salaryApi.createJob(job)));
+      await Promise.all(jobsToUpdate.map(job => salaryApi.updateJob(job)));
+      await Promise.all(jobIdsToDelete.map(id => salaryApi.deleteJob(id)));
       setJobs(updatedJobs);
     } catch (error) {
       setApiError(mapApiError(error));
