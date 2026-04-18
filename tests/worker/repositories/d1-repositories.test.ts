@@ -12,9 +12,9 @@ interface D1QueryResult {
 
 interface D1PreparedLike {
   bind: (...values: unknown[]) => D1PreparedLike;
-  run: <T = D1QueryResult>() => T;
-  first: <T = Record<string, unknown>>() => T | null;
-  all: <T = Record<string, unknown>>() => { results: T[] };
+  run: <T = D1QueryResult>() => Promise<T>;
+  first: <T = Record<string, unknown>>() => Promise<T | null>;
+  all: <T = Record<string, unknown>>() => Promise<{ results: T[] }>;
 }
 
 class FakeD1Database {
@@ -31,9 +31,9 @@ class FakeD1Database {
         args = values;
         return statement;
       },
-      run: <T>() => this.executeRun(normalized, args) as T,
-      first: <T>() => this.executeFirst<T>(normalized, args),
-      all: <T>() => ({ results: this.executeAll<T>(normalized, args) }),
+      run: async <T>() => this.executeRun(normalized, args) as T,
+      first: async <T>() => this.executeFirst<T>(normalized, args),
+      all: async <T>() => ({ results: this.executeAll<T>(normalized, args) }),
     };
 
     return statement;
@@ -251,7 +251,7 @@ describe('d1 repositories', () => {
     const db = new FakeD1Database() as unknown as D1Database;
     const repo = createD1JobRepository(db);
 
-    repo.create({
+    await repo.create({
       id: 'j1',
       name: '包裝',
       calcType: 'HOURLY',
@@ -259,7 +259,7 @@ describe('d1 repositories', () => {
       color: '#10b981',
     });
 
-    const jobs = repo.list();
+    const jobs = await repo.list();
 
     expect(jobs).toHaveLength(1);
     expect(jobs[0]).toMatchObject({ id: 'j1', name: '包裝' });
@@ -269,15 +269,15 @@ describe('d1 repositories', () => {
     const db = new FakeD1Database() as unknown as D1Database;
     const logRepo = createD1LogRepository(db);
 
-    expect(() => {
+    await expect(
       logRepo.create({
         id: 'l1',
         jobId: 'missing-job',
         date: '2026-04-07',
         amount: 100,
         unitPriceAtTime: 100,
-      });
-    }).toThrow();
+      }),
+    ).rejects.toThrow();
   });
 
   it('upserts and lists weekly prices', async () => {
@@ -285,7 +285,7 @@ describe('d1 repositories', () => {
     const jobRepo = createD1JobRepository(db);
     const weeklyRepo = createD1WeeklyPriceRepository(db);
 
-    jobRepo.create({
+    await jobRepo.create({
       id: 'j1',
       name: '包裝',
       calcType: 'PIECE',
@@ -293,11 +293,9 @@ describe('d1 repositories', () => {
       color: '#22c55e',
     });
 
-    weeklyRepo.set('2026-04-13', 'j1', 4);
-    weeklyRepo.set('2026-04-13', 'j1', 5);
+    await weeklyRepo.set('2026-04-13', 'j1', 4);
+    await weeklyRepo.set('2026-04-13', 'j1', 5);
 
-    expect(weeklyRepo.listAll()).toEqual([
-      { weekStart: '2026-04-13', jobId: 'j1', unitPrice: 5 },
-    ]);
+    await expect(weeklyRepo.listAll()).resolves.toEqual([{ weekStart: '2026-04-13', jobId: 'j1', unitPrice: 5 }]);
   });
 });

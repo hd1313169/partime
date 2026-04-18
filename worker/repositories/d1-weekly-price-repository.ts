@@ -14,11 +14,12 @@ interface D1Results<T> {
 
 export function createD1WeeklyPriceRepository(db: D1Database): WeeklyPriceRepository {
   return {
-    set(weekStart: string, jobId: string, unitPrice: number) {
+    async set(weekStart: string, jobId: string, unitPrice: number) {
       try {
-        db.prepare(
-          'INSERT INTO weekly_prices (week_start, job_id, unit_price) VALUES (?, ?, ?) ON CONFLICT(week_start, job_id) DO UPDATE SET unit_price = excluded.unit_price, updated_at = CURRENT_TIMESTAMP',
-        )
+        await db
+          .prepare(
+            'INSERT INTO weekly_prices (week_start, job_id, unit_price) VALUES (?, ?, ?) ON CONFLICT(week_start, job_id) DO UPDATE SET unit_price = excluded.unit_price, updated_at = CURRENT_TIMESTAMP',
+          )
           .bind(weekStart, jobId, unitPrice)
           .run();
       } catch (error) {
@@ -29,8 +30,10 @@ export function createD1WeeklyPriceRepository(db: D1Database): WeeklyPriceReposi
         throw error;
       }
     },
-    listAll() {
-      const result = db.prepare('SELECT week_start, job_id, unit_price FROM weekly_prices ORDER BY week_start, job_id').all<WeeklyPriceRowDb>() as unknown as D1Results<WeeklyPriceRowDb>;
+    async listAll() {
+      const result = (await db
+        .prepare('SELECT week_start, job_id, unit_price FROM weekly_prices ORDER BY week_start, job_id')
+        .all<WeeklyPriceRowDb>()) as D1Results<WeeklyPriceRowDb>;
       return (result.results ?? []).map((row): WeeklyPriceRow => ({
         weekStart: row.week_start,
         jobId: row.job_id,

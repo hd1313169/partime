@@ -9,35 +9,35 @@ interface SalaryServiceDeps {
 
 export function createSalaryService({ jobRepo, logRepo, weeklyPriceRepo }: SalaryServiceDeps) {
   return {
-    listJobs() {
-      return jobRepo.list();
+    async listJobs() {
+      return await jobRepo.list();
     },
-    createJob(input: Job) {
-      return jobRepo.create(input);
+    async createJob(input: Job) {
+      return await jobRepo.create(input);
     },
-    updateJob(id: string, input: Job) {
-      return jobRepo.update(id, input);
+    async updateJob(id: string, input: Job) {
+      return await jobRepo.update(id, input);
     },
-    deleteJob(id: string) {
-      return jobRepo.remove(id);
+    async deleteJob(id: string) {
+      await jobRepo.remove(id);
     },
-    listLogs() {
-      return logRepo.listAll();
+    async listLogs() {
+      return await logRepo.listAll();
     },
-    createLog(input: WorkLog) {
-      return logRepo.create(input);
+    async createLog(input: WorkLog) {
+      return await logRepo.create(input);
     },
-    updateLog(id: string, input: WorkLog) {
-      return logRepo.update(id, input);
+    async updateLog(id: string, input: WorkLog) {
+      return await logRepo.update(id, input);
     },
-    deleteLog(id: string) {
-      return logRepo.remove(id);
+    async deleteLog(id: string) {
+      await logRepo.remove(id);
     },
-    setWeeklyPrice(weekStart: string, jobId: string, unitPrice: number) {
-      return weeklyPriceRepo.set(weekStart, jobId, unitPrice);
+    async setWeeklyPrice(weekStart: string, jobId: string, unitPrice: number) {
+      await weeklyPriceRepo.set(weekStart, jobId, unitPrice);
     },
-    getBootstrapData() {
-      const weeklyRows = weeklyPriceRepo.listAll();
+    async getBootstrapData() {
+      const [weeklyRows, jobs, logs] = await Promise.all([weeklyPriceRepo.listAll(), jobRepo.list(), logRepo.listAll()]);
       const weeklyPrices = weeklyRows.reduce<Record<string, Record<string, number>>>((acc, row) => {
         if (!acc[row.weekStart]) {
           acc[row.weekStart] = {};
@@ -47,8 +47,8 @@ export function createSalaryService({ jobRepo, logRepo, weeklyPriceRepo }: Salar
       }, {});
 
       return {
-        jobs: jobRepo.list(),
-        logs: logRepo.listAll(),
+        jobs,
+        logs,
         weeklyPrices,
       };
     },

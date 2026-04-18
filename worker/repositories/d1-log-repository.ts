@@ -40,26 +40,27 @@ function mapLogRow(row: LogRow): WorkLog {
 
 export function createD1LogRepository(db: D1Database): LogRepository {
   return {
-    listByWeekStart(weekStart: string) {
-      const result = db
+    async listByWeekStart(weekStart: string) {
+      const result = (await db
         .prepare(
           "SELECT id, job_id, date, start_time, end_time, quantity, amount, unit_price_at_time FROM logs WHERE date >= date(?) AND date <= date(?, '+6 day') ORDER BY date, id",
         )
         .bind(weekStart, weekStart)
-        .all<LogRow>() as unknown as D1Results<LogRow>;
+        .all<LogRow>()) as D1Results<LogRow>;
 
       return (result.results ?? []).map(mapLogRow);
     },
-    listAll() {
-      const result = db
+    async listAll() {
+      const result = (await db
         .prepare('SELECT id, job_id, date, start_time, end_time, quantity, amount, unit_price_at_time FROM logs ORDER BY date, id')
-        .all<LogRow>() as unknown as D1Results<LogRow>;
+        .all<LogRow>()) as D1Results<LogRow>;
 
       return (result.results ?? []).map(mapLogRow);
     },
-    create(input: WorkLog) {
+    async create(input: WorkLog) {
       try {
-        db.prepare('INSERT INTO logs (id, job_id, date, start_time, end_time, quantity, amount, unit_price_at_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
+        await db
+          .prepare('INSERT INTO logs (id, job_id, date, start_time, end_time, quantity, amount, unit_price_at_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
           .bind(
             input.id,
             input.jobId,
@@ -80,8 +81,8 @@ export function createD1LogRepository(db: D1Database): LogRepository {
       }
       return input;
     },
-    update(id: string, input: WorkLog) {
-      const result = db
+    async update(id: string, input: WorkLog) {
+      const result = (await db
         .prepare('UPDATE logs SET job_id=?, date=?, start_time=?, end_time=?, quantity=?, amount=?, unit_price_at_time=?, updated_at=CURRENT_TIMESTAMP WHERE id=?')
         .bind(
           input.jobId,
@@ -93,15 +94,15 @@ export function createD1LogRepository(db: D1Database): LogRepository {
           input.unitPriceAtTime,
           id,
         )
-        .run() as unknown as D1RunResult;
+        .run()) as D1RunResult;
 
       if ((result.meta?.changes ?? 0) === 0) {
         throw new AppError('NOT_FOUND', 404, 'Log not found');
       }
       return input;
     },
-    remove(id: string) {
-      const result = db.prepare('DELETE FROM logs WHERE id = ?').bind(id).run() as unknown as D1RunResult;
+    async remove(id: string) {
+      const result = (await db.prepare('DELETE FROM logs WHERE id = ?').bind(id).run()) as D1RunResult;
       if ((result.meta?.changes ?? 0) === 0) {
         throw new AppError('NOT_FOUND', 404, 'Log not found');
       }
