@@ -8,6 +8,10 @@ export interface ApiErrorPayload {
   };
 }
 
+interface ApiSuccessPayload<T> {
+  data: T;
+}
+
 export async function apiRequest<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
   const response = await fetch(input, init);
 
@@ -15,13 +19,13 @@ export async function apiRequest<T>(input: RequestInfo | URL, init?: RequestInit
     return undefined as T;
   }
 
-  const payload = await response.json().catch(() => ({}));
+  const payload = (await response.json().catch(() => ({}))) as ApiErrorPayload | ApiSuccessPayload<T>;
 
   if (!response.ok) {
     throw payload;
   }
 
-  return payload.data as T;
+  return (payload as ApiSuccessPayload<T>).data;
 }
 
 export function mapApiError(payload: ApiErrorPayload): string {

@@ -1,0 +1,11 @@
+name = "partime-api"
+main = "worker/index.ts"
+compatibility_date = "2026-04-18"
+
+[vars]
+API_PREFIX = "/api"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "partime-db"
+database_id = "REPLACE_WITH_REAL_D1_DATABASE_ID"

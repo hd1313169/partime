@@ -22,9 +22,18 @@
     },
     "allowImportingTsExtensions": true,
     "types": [
-      "vitest/globals",
-      "node"
+      "node",
+      "@cloudflare/workers-types",
+      "vitest/globals"
     ],
     "noEmit": true
-  }
+  },
+  "include": [
+    "src",
+    "server",
+    "worker",
+    "tests",
+    "vite.config.ts",
+    "vitest.config.ts"
+  ]
 }

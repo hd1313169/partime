@@ -4,16 +4,20 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
+    "dev": "concurrently \"npm run dev:client\" \"npm run dev:worker\"",
     "dev:client": "vite --port=3000 --host=0.0.0.0",
+    "dev:worker": "wrangler dev --port 8787",
     "dev:server": "tsx watch server/index.ts",
     "build": "vite build",
+    "build:worker": "wrangler deploy --dry-run",
+    "deploy": "npm run build && wrangler deploy",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
     "test": "npm run test:server && npm run test:client",
     "test:server": "vitest run tests/server --reporter=verbose",
     "test:client": "vitest run tests/client --reporter=verbose",
+    "test:worker": "vitest run tests/worker --reporter=verbose",
     "test:watch": "vitest"
   },
   "dependencies": {
@@ -25,6 +29,7 @@
     "date-fns": "^4.1.0",
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
+    "hono": "^4.10.0",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
     "react": "^19.0.0",
@@ -39,12 +44,14 @@
     "@types/node": "^22.14.0",
     "autoprefixer": "^10.4.21",
     "concurrently": "^9.0.1",
+    "@cloudflare/workers-types": "^4.20260415.0",
     "jsdom": "^25.0.1",
     "supertest": "^7.0.0",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.8",
+    "wrangler": "^4.11.1"
   }
 }
