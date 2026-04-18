@@ -28,14 +28,7 @@ describe('App Shell Layout - Width and Contrast Hooks', () => {
   });
 
   it('renders App component with required CSS hooks for layout', () => {
-    // Mock the bootstrap API to return empty data
-    vi.mocked(salaryApi.getBootstrap).mockResolvedValue({
-      jobs: [],
-      logs: [],
-      weeklyPrices: {},
-    });
-
-    // Use renderToStaticMarkup to generate HTML
+    // Use renderToStaticMarkup to generate HTML (SSR-only, no async execution)
     const markup = renderToStaticMarkup(<App />);
 
     // Assert the markup contains the required CSS class hooks

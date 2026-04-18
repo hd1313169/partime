@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { WeeklySheet } from '../../src/components/WeeklySheet';
 import { JobType, WorkLog } from '../../src/types';
@@ -28,9 +28,9 @@ describe('WeeklySheet Contrast - Width and Contrast Hooks', () => {
     };
 
     // Create mock callbacks
-    const mockOnUpdateWeeklyPrice = () => {};
-    const mockOnCellClick = () => {};
-    const mockOnGenerateReport = () => {};
+    const mockOnUpdateWeeklyPrice = vi.fn();
+    const mockOnCellClick = vi.fn();
+    const mockOnGenerateReport = vi.fn();
 
     // Use renderToStaticMarkup to generate HTML
     const markup = renderToStaticMarkup(
