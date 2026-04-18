@@ -1,6 +1,11 @@
-import { mapApiError } from '../../src/services/apiClient';
+import { getResolvedApiBaseUrl, mapApiError } from '../../src/services/apiClient';
 
 describe('api client error mapping', () => {
+  it('uses same-origin /api base by default', () => {
+    const baseUrl = getResolvedApiBaseUrl();
+    expect(baseUrl).toBe('/api');
+  });
+
   it('maps VALIDATION_ERROR into readable message', () => {
     const msg = mapApiError({
       error: {

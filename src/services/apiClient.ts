@@ -12,8 +12,28 @@ interface ApiSuccessPayload<T> {
   data: T;
 }
 
+export function getResolvedApiBaseUrl(): string {
+  const env = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env;
+  return env?.VITE_API_BASE_URL?.trim() || '/api';
+}
+
+function getResolvedRequestInput(input: RequestInfo | URL): RequestInfo | URL {
+  if (typeof input !== 'string') {
+    return input;
+  }
+
+  if (/^(?:[a-z]+:)?\/\//i.test(input) || input.startsWith('/api')) {
+    return input;
+  }
+
+  const apiBaseUrl = getResolvedApiBaseUrl().replace(/\/$/, '');
+  const path = input.startsWith('/') ? input : `/${input}`;
+
+  return `${apiBaseUrl}${path}`;
+}
+
 export async function apiRequest<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
-  const response = await fetch(input, init);
+  const response = await fetch(getResolvedRequestInput(input), init);
 
   if (response.status === 204) {
     return undefined as T;

@@ -6,7 +6,7 @@
 
 This project now runs as a single-repo full-stack app:
 - Frontend: Vite + React (`http://localhost:3000`)
-- Backend (migration in progress): Cloudflare Worker API (`http://localhost:8787` in local dev)
+- Backend: Cloudflare Worker API (`http://127.0.0.1:8787` in local dev)
 
 ## Prerequisites
 
@@ -25,6 +25,8 @@ When `npm run dev` starts successfully, you should see both:
 - `VITE ... Local: http://localhost:3000/`
 - `wrangler ... Ready on http://localhost:8787`
 
+The frontend uses same-origin `/api/*` requests by default. In local dev, Vite proxies `/api` to the Worker endpoint at `http://127.0.0.1:8787`.
+
 ## Optional Split Mode
 
 - Frontend only: `npm run dev:client`
@@ -37,15 +39,10 @@ When `npm run dev` starts successfully, you should see both:
 - Local Worker env template: `.dev.vars.example`
 - Worker tests: `npm run test:worker`
 
-Current status:
-- Worker entrypoint (`worker/index.ts`) is not implemented yet.
-- `npm run test:worker` is expected to fail until Worker implementation tasks are completed.
-- `npm run dev:worker` is expected to fail for the same reason in Task 1.
-
 ## Deployment
 
 - Do not use `npm run deploy` directly (it intentionally exits with instructions).
-- Use explicit environment deploy commands only:
+- Use explicit environment deploy commands only after configuring `wrangler.toml` and applying D1 migrations:
    - `npm run deploy:staging`
    - `npm run deploy:production`
 
