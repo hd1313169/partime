@@ -92,7 +92,7 @@ export const WeeklySheet: React.FC<WeeklySheetProps> = ({
           
           return (
             <div key={dateStr} className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-              <div className="p-4 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between">
+              <div className="mobile-day-card-header p-4 flex items-center justify-between">
                 <div>
                   <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                     {format(day, 'EEEE', { locale: zhTW })}
@@ -109,7 +109,7 @@ export const WeeklySheet: React.FC<WeeklySheetProps> = ({
                   {dailyTotal > 0 && (
                     <button 
                       onClick={() => generateReportText(dateStr)}
-                      className="p-3 bg-emerald-600 text-white rounded-2xl shadow-lg shadow-emerald-100 active:scale-95 transition-all"
+                      className="button-icon-strong p-3"
                     >
                       <FileText className="w-5 h-5" />
                     </button>
@@ -183,7 +183,7 @@ export const WeeklySheet: React.FC<WeeklySheetProps> = ({
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[1000px]">
             <thead>
-              <tr className="bg-slate-50/80 border-b border-slate-100">
+              <tr className="desktop-weekly-head">
                 <th className="p-6 text-xs font-black text-slate-400 uppercase tracking-[0.2em] sticky left-0 bg-slate-50/80 backdrop-blur-md z-10 border-r border-slate-100 whitespace-nowrap">工作項目</th>
                 <th className="p-6 text-xs font-black text-slate-400 uppercase tracking-[0.2em] whitespace-nowrap">本週單價</th>
                 {days.map(day => (
@@ -202,13 +202,13 @@ export const WeeklySheet: React.FC<WeeklySheetProps> = ({
             <tbody>
               {jobs.map(job => (
                 <tr key={job.id} className="border-b border-slate-50 group transition-all">
-                  <td className="p-6 font-bold text-slate-900 sticky left-0 bg-white z-10 border-r border-slate-50 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.05)] whitespace-nowrap">
+                  <td className="desktop-weekly-sticky-lead p-6 font-bold text-slate-900 sticky left-0 bg-white z-10 border-r border-slate-50 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.05)] whitespace-nowrap">
                     <div className="flex items-center gap-3">
                       <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: job.color }}></div>
                       {job.name}
                     </div>
                   </td>
-                  <td className="p-6">
+                  <td className="desktop-weekly-sticky-lead p-6">
                     <div className="flex items-center gap-2 group/price">
                       <span className="text-[10px] font-black text-slate-300 uppercase">NT$</span>
                       <input 
@@ -252,7 +252,7 @@ export const WeeklySheet: React.FC<WeeklySheetProps> = ({
                       </td>
                     );
                   })}
-                  <td className="p-6 text-right font-black text-slate-900 sticky right-0 bg-white z-10 border-l border-slate-50 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]">
+                  <td className="desktop-weekly-sticky-total p-6 text-right font-black text-slate-900 sticky right-0 bg-white z-10 border-l border-slate-50 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]">
                     <span className="text-xs text-slate-300 mr-2">NT$</span>
                     {calculateJobWeeklyTotal(job.id).toLocaleString()}
                   </td>
@@ -285,7 +285,7 @@ export const WeeklySheet: React.FC<WeeklySheetProps> = ({
                     </td>
                   );
                 })}
-                <td className="p-6 text-right font-black text-2xl bg-emerald-600 shadow-[-10px_0_20px_-5px_rgba(16,185,129,0.3)]">
+                <td className="desktop-weekly-sticky-total p-6 text-right font-black text-2xl bg-emerald-600 shadow-[-10px_0_20px_-5px_rgba(16,185,129,0.3)]">
                   <div className="text-[10px] font-black text-emerald-200 uppercase tracking-[0.2em] mb-1">全週總計</div>
                   NT$ {grandTotal.toLocaleString()}
                 </td>
