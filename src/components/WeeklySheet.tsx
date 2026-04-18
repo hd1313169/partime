@@ -184,7 +184,7 @@ export const WeeklySheet: React.FC<WeeklySheetProps> = ({
           <table className="w-full text-left border-collapse min-w-[1000px]">
             <thead>
               <tr className="desktop-weekly-head">
-                <th className="p-6 text-xs font-black text-slate-400 uppercase tracking-[0.2em] sticky left-0 bg-slate-50/80 backdrop-blur-md z-10 border-r border-slate-100 whitespace-nowrap">工作項目</th>
+                <th className="p-6 text-xs font-black text-slate-400 uppercase tracking-[0.2em] sticky left-0 z-10 border-r border-slate-100 whitespace-nowrap">工作項目</th>
                 <th className="p-6 text-xs font-black text-slate-400 uppercase tracking-[0.2em] whitespace-nowrap">本週單價</th>
                 {days.map(day => (
                   <th key={day.toString()} className="p-4 text-center min-w-[120px]">
@@ -196,7 +196,7 @@ export const WeeklySheet: React.FC<WeeklySheetProps> = ({
                     </div>
                   </th>
                 ))}
-                <th className="p-6 text-xs font-black text-slate-400 uppercase tracking-[0.2em] text-right sticky right-0 bg-slate-50/80 backdrop-blur-md z-10 border-l border-slate-100">週合計</th>
+                <th className="p-6 text-xs font-black text-slate-400 uppercase tracking-[0.2em] text-right sticky right-0 z-10 border-l border-slate-100">週合計</th>
               </tr>
             </thead>
             <tbody>
