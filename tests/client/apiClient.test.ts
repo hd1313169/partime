@@ -37,6 +37,15 @@ describe('api client error mapping', () => {
     expect(fetchMock).toHaveBeenCalledWith('https://api.example.com/v1/jobs', undefined);
   });
 
+  it('normalizes workers base url to include /api path', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://partime-api-production.wsad71155.workers.dev');
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ data: [] }), { status: 200 }));
+
+    await apiRequest('/api/bootstrap');
+
+    expect(fetchMock).toHaveBeenCalledWith('https://partime-api-production.wsad71155.workers.dev/api/bootstrap', undefined);
+  });
+
   it('maps VALIDATION_ERROR into readable message', () => {
     const msg = mapApiError({
       error: {

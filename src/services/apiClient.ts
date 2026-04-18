@@ -13,7 +13,28 @@ interface ApiSuccessPayload<T> {
 }
 
 const PAGES_PROJECT_HOST = 'partime-abb.pages.dev';
-const PRODUCTION_WORKER_API_BASE_URL = 'https://partime-api-production.wsad71155.workers.dev';
+const PRODUCTION_WORKER_API_BASE_URL = 'https://partime-api-production.wsad71155.workers.dev/api';
+
+function normalizeApiBaseUrl(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  if (!trimmed) {
+    return undefined;
+  }
+
+  if (!/^https:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+
+  try {
+    const url = new URL(trimmed);
+    if (url.hostname.endsWith('.workers.dev') && (url.pathname === '/' || url.pathname === '')) {
+      url.pathname = '/api';
+    }
+    return url.toString().replace(/\/$/, '');
+  } catch {
+    return trimmed;
+  }
+}
 
 function getPagesApiFallback(): string | undefined {
   if (typeof window === 'undefined') {
@@ -31,7 +52,7 @@ function getPagesApiFallback(): string | undefined {
 export function getResolvedApiBaseUrl(): string {
   const nodeEnv = typeof process !== 'undefined' ? process.env.VITE_API_BASE_URL : undefined;
   const viteEnv = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_API_BASE_URL;
-  return nodeEnv?.trim() || viteEnv?.trim() || getPagesApiFallback() || '/api';
+  return normalizeApiBaseUrl(nodeEnv) || normalizeApiBaseUrl(viteEnv) || normalizeApiBaseUrl(getPagesApiFallback()) || '/api';
 }
 
 function getResolvedRequestInput(input: RequestInfo | URL): RequestInfo | URL {
