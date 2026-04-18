@@ -160,4 +160,20 @@ describe('worker api contract', () => {
     const body = (await res.json()) as { error: { code: string } };
     expect(body.error.code).toBe('VALIDATION_ERROR');
   });
+
+  it('POST /api/jobs with malformed JSON → 400 with VALIDATION_ERROR envelope', async () => {
+    const res = await app.request(
+      '/api/jobs',
+      {
+        method: 'POST',
+        body: '{"id":"j9",',
+        headers: { 'Content-Type': 'application/json' },
+      },
+      freshEnv(),
+    );
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as { error: { code: string; message: string } };
+    expect(body.error.code).toBe('VALIDATION_ERROR');
+    expect(body.error.message).toBe('Invalid JSON body');
+  });
 });

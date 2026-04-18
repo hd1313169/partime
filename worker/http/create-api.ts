@@ -11,6 +11,14 @@ export interface WorkerEnv {
   DB: D1Database;
 }
 
+async function readJsonBody(c: { req: { json: () => Promise<unknown> } }) {
+  try {
+    return await c.req.json();
+  } catch {
+    throw new AppError('VALIDATION_ERROR', 400, 'Invalid JSON body');
+  }
+}
+
 function makeService(db: D1Database) {
   return createSalaryService({
     jobRepo: createD1JobRepository(db),
@@ -40,14 +48,14 @@ export function createApi() {
   });
 
   app.post('/api/jobs', async (c) => {
-    const body = await c.req.json();
+    const body = await readJsonBody(c);
     assertValidJobPayload(body);
     const created = await makeService(c.env.DB).createJob(body);
     return ok(created, { status: 201 });
   });
 
   app.put('/api/jobs/:id', async (c) => {
-    const body = await c.req.json();
+    const body = await readJsonBody(c);
     assertValidJobPayload(body);
     const id = c.req.param('id');
     if (body.id !== id) {
@@ -72,14 +80,14 @@ export function createApi() {
   });
 
   app.post('/api/logs', async (c) => {
-    const body = await c.req.json();
+    const body = await readJsonBody(c);
     assertValidLogPayload(body);
     const created = await makeService(c.env.DB).createLog(body);
     return ok(created, { status: 201 });
   });
 
   app.put('/api/logs/:id', async (c) => {
-    const body = await c.req.json();
+    const body = await readJsonBody(c);
     assertValidLogPayload(body);
     const id = c.req.param('id');
     if (body.id !== id) {
@@ -100,7 +108,7 @@ export function createApi() {
   // ── weekly prices ─────────────────────────────────────────────────────────
 
   app.put('/api/weekly-prices/:weekStart', async (c) => {
-    const body = await c.req.json();
+    const body = await readJsonBody(c);
     assertValidWeeklyPricePayload(body);
     await makeService(c.env.DB).setWeeklyPrice(c.req.param('weekStart'), body.jobId, body.unitPrice);
     return new Response(null, { status: 204 });
