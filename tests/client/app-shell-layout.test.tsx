@@ -7,12 +7,18 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import App from '../../src/App';
 import { salaryApi } from '../../src/services/salaryApi';
-import React from 'react';
 
 // Mock salaryApi
 vi.mock('../../src/services/salaryApi', () => ({
   salaryApi: {
     getBootstrap: vi.fn(),
+    setWeeklyPrice: vi.fn(),
+    createLog: vi.fn(),
+    updateLog: vi.fn(),
+    deleteLog: vi.fn(),
+    createJob: vi.fn(),
+    updateJob: vi.fn(),
+    deleteJob: vi.fn(),
   },
 }));
 
@@ -21,16 +27,16 @@ describe('App Shell Layout - Width and Contrast Hooks', () => {
     vi.clearAllMocks();
   });
 
-  it('renders App component with required CSS hooks for layout', async () => {
+  it('renders App component with required CSS hooks for layout', () => {
     // Mock the bootstrap API to return empty data
-    (salaryApi.getBootstrap as any).mockResolvedValue({
+    (salaryApi.getBootstrap as ReturnType<typeof vi.fn>).mockResolvedValue({
       jobs: [],
       logs: [],
       weeklyPrices: {},
     });
 
     // Use renderToStaticMarkup to generate HTML
-    const markup = renderToStaticMarkup(React.createElement(App));
+    const markup = renderToStaticMarkup(<App />);
 
     // Assert the markup contains the required CSS class hooks
     expect(markup).toContain('app-shell-wide');

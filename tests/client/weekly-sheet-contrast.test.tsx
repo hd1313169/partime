@@ -9,7 +9,7 @@ import { WeeklySheet } from '../../src/components/WeeklySheet';
 import { JobType, WorkLog } from '../../src/types';
 
 describe('WeeklySheet Contrast - Width and Contrast Hooks', () => {
-  it('renders WeeklySheet component with required CSS hooks for contrast', async () => {
+  it('renders WeeklySheet component with required CSS hooks for contrast', () => {
     // Minimal valid props for WeeklySheet
     const jobs: JobType[] = [
       {
@@ -17,7 +17,7 @@ describe('WeeklySheet Contrast - Width and Contrast Hooks', () => {
         name: 'Test Job',
         calcType: 'HOURLY',
         unitPrice: 250,
-        color: 'emerald',
+        color: '#22c55e',
       },
     ];
 
@@ -34,15 +34,15 @@ describe('WeeklySheet Contrast - Width and Contrast Hooks', () => {
 
     // Use renderToStaticMarkup to generate HTML
     const markup = renderToStaticMarkup(
-      WeeklySheet({
-        logs,
-        jobs,
-        currentDate,
-        weeklyPrices,
-        onUpdateWeeklyPrice: mockOnUpdateWeeklyPrice,
-        onCellClick: mockOnCellClick,
-        onGenerateReport: mockOnGenerateReport,
-      })
+      <WeeklySheet
+        logs={logs}
+        jobs={jobs}
+        currentDate={currentDate}
+        weeklyPrices={weeklyPrices}
+        onUpdateWeeklyPrice={mockOnUpdateWeeklyPrice}
+        onCellClick={mockOnCellClick}
+        onGenerateReport={mockOnGenerateReport}
+      />
     );
 
     // Assert the markup contains the required CSS class hooks
