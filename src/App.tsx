@@ -208,12 +208,12 @@ export default function App() {
       <main className="app-shell-wide px-4 sm:px-6 lg:px-8 py-10">
         <div className="space-y-8">
           {isLoading && (
-            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700">
+            <div className="feedback-banner-strong loading">
               正在載入資料...
             </div>
           )}
           {apiError && (
-            <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-bold text-rose-700">
+            <div className="feedback-banner-strong error">
               {apiError}
             </div>
           )}

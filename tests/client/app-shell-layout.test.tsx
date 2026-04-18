@@ -36,5 +36,12 @@ describe('App Shell Layout - Width and Contrast Hooks', () => {
     expect(markup).toContain('app-topbar');
     expect(markup).toContain('button-secondary-strong');
   });
+
+  it('renders feedback banners with stronger contrast utilities', () => {
+    const markup = renderToStaticMarkup(<App />);
+
+    // Assert feedback banners use feedback-banner-strong for better visibility
+    expect(markup).toContain('feedback-banner-strong');
+  });
 });
 
