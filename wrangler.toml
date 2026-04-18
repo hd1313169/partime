@@ -2,11 +2,11 @@ name = "partime-api"
 main = "worker/index.ts"
 compatibility_date = "2026-04-18"
 
-[vars]
-API_PREFIX = "/api"
-
 [env.staging]
 name = "partime-api-staging"
+
+[env.staging.vars]
+API_PREFIX = "/api"
 
 [[env.staging.d1_databases]]
 binding = "DB"
@@ -15,6 +15,9 @@ database_id = "REPLACE_WITH_STAGING_D1_DATABASE_ID"
 
 [env.production]
 name = "partime-api-production"
+
+[env.production.vars]
+API_PREFIX = "/api"
 
 [[env.production.d1_databases]]
 binding = "DB"
