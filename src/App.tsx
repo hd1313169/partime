@@ -172,8 +172,8 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-emerald-100 selection:text-emerald-900">
-      <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <header className="app-topbar">
+        <div className="app-shell-wide px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="bg-emerald-600 p-2.5 rounded-2xl shadow-lg shadow-emerald-200 rotate-3">
               <Wallet className="w-6 h-6 text-white" />
@@ -196,7 +196,7 @@ export default function App() {
             )}
             <button 
               onClick={() => setJobManagementOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 font-bold rounded-2xl hover:bg-slate-50 transition-all shadow-sm group"
+              className="button-secondary-strong group"
             >
               <Settings2 className="w-4 h-4 text-slate-400 group-hover:text-emerald-600 transition-colors" />
               <span className="hidden sm:inline">工作項目管理</span>
@@ -205,7 +205,7 @@ export default function App() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <main className="app-shell-wide px-4 sm:px-6 lg:px-8 py-10">
         <div className="space-y-8">
           {isLoading && (
             <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700">
@@ -314,7 +314,7 @@ export default function App() {
         }}
       />
 
-      <footer className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+      <footer className="app-shell-wide px-4 sm:px-6 lg:px-8 py-16 text-center">
         <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-slate-200 shadow-sm">
           <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
           <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">
