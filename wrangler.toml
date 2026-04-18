@@ -1,6 +1,7 @@
 name = "partime-api"
 main = "worker/index.ts"
 compatibility_date = "2026-04-18"
+pages_build_output_dir = "dist"
 
 [env.staging]
 name = "partime-api-staging"
