@@ -1,6 +1,7 @@
 import type { WorkLog } from '../../server/domain/models';
 import type { LogRepository } from '../../server/domain/repositories';
 import { AppError } from '../../server/http/error';
+import type { D1Results, D1RunResult } from '../db/types';
 
 interface LogRow {
   id: string;
@@ -11,18 +12,6 @@ interface LogRow {
   quantity: number | null;
   amount: number;
   unit_price_at_time: number;
-}
-
-interface D1Results<T> {
-  results?: T[];
-}
-
-interface D1RunMeta {
-  changes?: number;
-}
-
-interface D1RunResult {
-  meta?: D1RunMeta;
 }
 
 function mapLogRow(row: LogRow): WorkLog {
@@ -74,8 +63,13 @@ export function createD1LogRepository(db: D1Database): LogRepository {
           .run();
       } catch (error) {
         const d1Error = error as { message?: string };
-        if (typeof d1Error.message === 'string' && d1Error.message.includes('constraint failed')) {
-          throw new AppError('CONFLICT', 409, 'Log create conflict');
+        if (typeof d1Error.message === 'string') {
+          if (d1Error.message.includes('FOREIGN KEY constraint failed')) {
+            throw new AppError('NOT_FOUND', 404, 'Job not found');
+          }
+          if (d1Error.message.includes('UNIQUE constraint failed')) {
+            throw new AppError('CONFLICT', 409, 'Log id already exists');
+          }
         }
         throw error;
       }

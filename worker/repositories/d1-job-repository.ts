@@ -1,6 +1,7 @@
 import type { Job } from '../../server/domain/models';
 import type { JobRepository } from '../../server/domain/repositories';
 import { AppError } from '../../server/http/error';
+import type { D1Results, D1RunResult } from '../db/types';
 
 interface JobRow {
   id: string;
@@ -8,18 +9,6 @@ interface JobRow {
   calc_type: Job['calcType'];
   unit_price: number;
   color: string;
-}
-
-interface D1Results<T> {
-  results?: T[];
-}
-
-interface D1RunMeta {
-  changes?: number;
-}
-
-interface D1RunResult {
-  meta?: D1RunMeta;
 }
 
 export function createD1JobRepository(db: D1Database): JobRepository {

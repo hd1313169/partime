@@ -1,15 +1,12 @@
 import type { WeeklyPriceRow } from '../../server/domain/models';
 import type { WeeklyPriceRepository } from '../../server/domain/repositories';
 import { AppError } from '../../server/http/error';
+import type { D1Results } from '../db/types';
 
 interface WeeklyPriceRowDb {
   week_start: string;
   job_id: string;
   unit_price: number;
-}
-
-interface D1Results<T> {
-  results?: T[];
 }
 
 export function createD1WeeklyPriceRepository(db: D1Database): WeeklyPriceRepository {
