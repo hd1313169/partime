@@ -11,7 +11,7 @@ API_PREFIX = "/api"
 [[env.staging.d1_databases]]
 binding = "DB"
 database_name = "partime-db-staging"
-database_id = "REPLACE_WITH_STAGING_D1_DATABASE_ID"
+database_id = "83e06a84-25ce-4575-89d8-3d0504fa5260"
 
 [env.production]
 name = "partime-api-production"
