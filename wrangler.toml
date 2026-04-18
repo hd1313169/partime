@@ -22,4 +22,4 @@ API_PREFIX = "/api"
 [[env.production.d1_databases]]
 binding = "DB"
 database_name = "partime-db-production"
-database_id = "REPLACE_WITH_PRODUCTION_D1_DATABASE_ID"
+database_id = "97b686ea-7e8f-4cdc-9719-ed5aad45bb88"
