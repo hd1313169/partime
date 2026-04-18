@@ -13,8 +13,9 @@ interface ApiSuccessPayload<T> {
 }
 
 export function getResolvedApiBaseUrl(): string {
-  const env = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env;
-  return env?.VITE_API_BASE_URL?.trim() || '/api';
+  const nodeEnv = typeof process !== 'undefined' ? process.env.VITE_API_BASE_URL : undefined;
+  const viteEnv = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_API_BASE_URL;
+  return nodeEnv?.trim() || viteEnv?.trim() || '/api';
 }
 
 function getResolvedRequestInput(input: RequestInfo | URL): RequestInfo | URL {
@@ -22,11 +23,23 @@ function getResolvedRequestInput(input: RequestInfo | URL): RequestInfo | URL {
     return input;
   }
 
-  if (/^(?:[a-z]+:)?\/\//i.test(input) || input.startsWith('/api')) {
+  if (/^(?:[a-z]+:)?\/\//i.test(input)) {
     return input;
   }
 
   const apiBaseUrl = getResolvedApiBaseUrl().replace(/\/$/, '');
+  const defaultApiBase = '/api';
+
+  if (input.startsWith('/api')) {
+    if (apiBaseUrl === defaultApiBase) {
+      return input;
+    }
+
+    const suffix = input.slice('/api'.length);
+    const normalizedSuffix = suffix.startsWith('/') || suffix.length === 0 ? suffix : `/${suffix}`;
+    return `${apiBaseUrl}${normalizedSuffix}`;
+  }
+
   const path = input.startsWith('/') ? input : `/${input}`;
 
   return `${apiBaseUrl}${path}`;
