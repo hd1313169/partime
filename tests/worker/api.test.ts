@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import { createRequire } from 'node:module';
 
 describe('worker api smoke', () => {
-  it('exposes /api/health', async () => {
-    const app = null as unknown as { request: (url: string) => Promise<Response> };
-    const res = await app.request('http://localhost/api/health');
-    expect(res.status).toBe(200);
+  it('fails until worker entrypoint is implemented', async () => {
+    const require = createRequire(import.meta.url);
+    const loadWorkerEntrypoint = () => require('../../worker/index');
+    expect(loadWorkerEntrypoint).not.toThrow();
   });
 });

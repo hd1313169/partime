@@ -5,7 +5,18 @@ compatibility_date = "2026-04-18"
 [vars]
 API_PREFIX = "/api"
 
-[[d1_databases]]
+[env.staging]
+name = "partime-api-staging"
+
+[[env.staging.d1_databases]]
 binding = "DB"
-database_name = "partime-db"
-database_id = "REPLACE_WITH_REAL_D1_DATABASE_ID"
+database_name = "partime-db-staging"
+database_id = "REPLACE_WITH_STAGING_D1_DATABASE_ID"
+
+[env.production]
+name = "partime-api-production"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "partime-db-production"
+database_id = "REPLACE_WITH_PRODUCTION_D1_DATABASE_ID"

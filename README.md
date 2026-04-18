@@ -6,7 +6,7 @@
 
 This project now runs as a single-repo full-stack app:
 - Frontend: Vite + React (`http://localhost:3000`)
-- Backend: Express + SQLite (`http://localhost:4000`)
+- Backend (migration in progress): Cloudflare Worker API (`http://localhost:8787` in local dev)
 
 ## Prerequisites
 
@@ -23,12 +23,12 @@ This project now runs as a single-repo full-stack app:
 
 When `npm run dev` starts successfully, you should see both:
 - `VITE ... Local: http://localhost:3000/`
-- `API listening on 4000 using db ./salary.sqlite`
+- `wrangler ... Ready on http://localhost:8787`
 
 ## Optional Split Mode
 
 - Frontend only: `npm run dev:client`
-- Backend only: `npm run dev:server`
+- Legacy Express backend only: `npm run dev:server`
 - Worker only: `npm run dev:worker`
 
 ## Cloudflare Baseline (Task 1)
@@ -37,7 +37,17 @@ When `npm run dev` starts successfully, you should see both:
 - Local Worker env template: `.dev.vars.example`
 - Worker tests: `npm run test:worker`
 
-Current status: Worker API routes are not implemented yet, so the worker smoke test is expected to fail until later tasks are completed.
+Current status:
+- Worker entrypoint (`worker/index.ts`) is not implemented yet.
+- `npm run test:worker` is expected to fail until Worker implementation tasks are completed.
+- `npm run dev:worker` is expected to fail for the same reason in Task 1.
+
+## Deployment
+
+- Do not use `npm run deploy` directly (it intentionally exits with instructions).
+- Use explicit environment deploy commands only:
+   - `npm run deploy:staging`
+   - `npm run deploy:production`
 
 ## Validation Commands
 
