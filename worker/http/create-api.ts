@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { cors } from 'hono/cors';
 import { AppError } from '../../server/http/error';
 import { assertValidJobPayload, assertValidLogPayload, assertValidWeeklyPricePayload } from '../../server/http/validate';
 import { createSalaryService } from '../../server/services/salary-service';
@@ -29,6 +30,17 @@ function makeService(db: D1Database) {
 
 export function createApi() {
   const app = new Hono<{ Bindings: WorkerEnv }>();
+
+  // Allow Pages frontend to call Worker APIs directly across origins.
+  app.use(
+    '/api/*',
+    cors({
+      origin: '*',
+      allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowHeaders: ['Content-Type'],
+      maxAge: 86400,
+    }),
+  );
 
   // ── health ────────────────────────────────────────────────────────────────
 

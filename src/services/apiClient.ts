@@ -12,10 +12,26 @@ interface ApiSuccessPayload<T> {
   data: T;
 }
 
+const PAGES_PROJECT_HOST = 'partime-abb.pages.dev';
+const PRODUCTION_WORKER_API_BASE_URL = 'https://partime-api-production.wsad71155.workers.dev';
+
+function getPagesApiFallback(): string | undefined {
+  if (typeof window === 'undefined') {
+    return undefined;
+  }
+
+  const hostname = window.location.hostname;
+  if (hostname === PAGES_PROJECT_HOST || hostname.endsWith(`.${PAGES_PROJECT_HOST}`)) {
+    return PRODUCTION_WORKER_API_BASE_URL;
+  }
+
+  return undefined;
+}
+
 export function getResolvedApiBaseUrl(): string {
   const nodeEnv = typeof process !== 'undefined' ? process.env.VITE_API_BASE_URL : undefined;
   const viteEnv = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_API_BASE_URL;
-  return nodeEnv?.trim() || viteEnv?.trim() || '/api';
+  return nodeEnv?.trim() || viteEnv?.trim() || getPagesApiFallback() || '/api';
 }
 
 function getResolvedRequestInput(input: RequestInfo | URL): RequestInfo | URL {
