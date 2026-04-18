@@ -29,7 +29,7 @@ describe('App Shell Layout - Width and Contrast Hooks', () => {
 
   it('renders App component with required CSS hooks for layout', () => {
     // Mock the bootstrap API to return empty data
-    (salaryApi.getBootstrap as ReturnType<typeof vi.fn>).mockResolvedValue({
+    vi.mocked(salaryApi.getBootstrap).mockResolvedValue({
       jobs: [],
       logs: [],
       weeklyPrices: {},
