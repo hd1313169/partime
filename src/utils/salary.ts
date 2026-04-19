@@ -15,7 +15,7 @@ export function calculateLogAmount(
     
     const diffMinutes = differenceInMinutes(end, start);
     
-    return Math.round((diffMinutes / 60) * unitPrice);
+    return Math.ceil((diffMinutes / 60) * unitPrice);
   }
   
   if ((job.calcType === 'PIECE' || job.calcType === 'FIXED') && quantity) {
