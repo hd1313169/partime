@@ -15,17 +15,18 @@ describe('calculateLogAmount', () => {
       expect(calculateLogAmount(hourlyJob, 120, '09:00', '09:30')).toBe(60);
     });
 
-    it('10 分鐘：150 元/時 → ceil(150 * 10/60) = ceil(25) = 25', () => {
-      // 150 * 10 / 60 = 25.0 → ceil = 25
+    it('10 分鐘：150 元/時 → 150 * 10/60 = 25.0（整除，round 與 ceil 結果相同 = 25）', () => {
+      // unitPrice 參數為 150，與 fixture 的 unitPrice 無關（函式使用第二參數）
       expect(calculateLogAmount(hourlyJob, 150, '09:00', '09:10')).toBe(25);
     });
 
-    it('20 分鐘：130 元/時 → ceil(130 * 20/60) = ceil(43.33) = 44（無條件進位）', () => {
-      // Math.round(43.33) = 43，Math.ceil(43.33) = 44
+    it('20 分鐘：130 元/時 → ceil(130 * 20/60) = ceil(43.33) = 44（無條件進位關鍵 case）', () => {
+      // Math.round(43.33) = 43，Math.ceil(43.33) = 44（此 case 驗證 ceil vs round 差異）
+      // unitPrice 參數為 130，與 fixture 的 unitPrice 無關（函式使用第二參數）
       expect(calculateLogAmount(hourlyJob, 130, '09:00', '09:20')).toBe(44);
     });
 
-    it('1 分鐘：120 元/時 → ceil(120 / 60) = ceil(2) = 2', () => {
+    it('1 分鐘：120 元/時 → 120 / 60 = 2.0（整除，round 與 ceil 結果相同 = 2）', () => {
       expect(calculateLogAmount(hourlyJob, 120, '09:00', '09:01')).toBe(2);
     });
 
@@ -48,6 +49,10 @@ describe('calculateLogAmount', () => {
   describe('FIXED', () => {
     it('固定：500 × 1 = 500', () => {
       expect(calculateLogAmount(fixedJob, 500, undefined, undefined, 1)).toBe(500);
+    });
+
+    it('缺少數量時回傳 0', () => {
+      expect(calculateLogAmount(fixedJob, 500, undefined, undefined, undefined)).toBe(0);
     });
   });
 });
