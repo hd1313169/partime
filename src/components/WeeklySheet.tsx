@@ -202,7 +202,7 @@ export const WeeklySheet: React.FC<WeeklySheetProps> = ({
             <tbody>
               {jobs.map(job => (
                 <tr key={job.id} className="border-b border-slate-50 group transition-all">
-                  <td className="desktop-weekly-sticky-lead p-6 font-bold text-slate-900 sticky left-0 bg-white z-10 border-r border-slate-50 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.05)] whitespace-nowrap">
+                  <td className="desktop-weekly-sticky-lead p-6 font-bold text-slate-900 sticky left-0 z-10 border-r border-slate-50 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.05)] whitespace-nowrap">
                     <div className="flex items-center gap-3">
                       <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: job.color }}></div>
                       {job.name}
@@ -252,7 +252,7 @@ export const WeeklySheet: React.FC<WeeklySheetProps> = ({
                       </td>
                     );
                   })}
-                  <td className="desktop-weekly-sticky-total p-6 text-right font-black text-slate-900 sticky right-0 bg-white z-10 border-l border-slate-50 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]">
+                  <td className="desktop-weekly-sticky-total p-6 text-right font-black text-slate-900 sticky right-0 z-10 border-l border-slate-50 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]">
                     <span className="text-xs text-slate-300 mr-2">NT$</span>
                     {calculateJobWeeklyTotal(job.id).toLocaleString()}
                   </td>
