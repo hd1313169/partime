@@ -50,4 +50,51 @@ describe('WeeklySheet Contrast - Width and Contrast Hooks', () => {
     expect(markup).toContain('desktop-weekly-head');
     expect(markup).toContain('desktop-weekly-sticky-total');
   });
+
+  describe('generateReportText - 依 jobs 順序輸出', () => {
+    it('回報文字的行序應與 jobs 陣列順序一致，而非 logs 順序', async () => {
+      const { render, screen, fireEvent } = await import('@testing-library/react');
+      const { WeeklySheet } = await import('../../src/components/WeeklySheet');
+
+      const jobs: JobType[] = [
+        { id: 'j-a', name: '工作A', calcType: 'PIECE', unitPrice: 10, color: '#aaa' },
+        { id: 'j-b', name: '工作B', calcType: 'PIECE', unitPrice: 20, color: '#bbb' },
+      ];
+
+      // logs 順序刻意與 jobs 顛倒：j-b 先，j-a 後
+      const logs: WorkLog[] = [
+        { id: 'l2', jobId: 'j-b', date: '2026-04-20', quantity: 3, amount: 60, unitPriceAtTime: 20 },
+        { id: 'l1', jobId: 'j-a', date: '2026-04-20', quantity: 5, amount: 50, unitPriceAtTime: 10 },
+      ];
+
+      const weeklyPrices: Record<string, number> = { 'j-a': 10, 'j-b': 20 };
+      const capturedText: string[] = [];
+
+      render(
+        <WeeklySheet
+          logs={logs}
+          jobs={jobs}
+          currentDate={new Date('2026-04-20')}
+          weeklyPrices={weeklyPrices}
+          onUpdateWeeklyPrice={vi.fn()}
+          onCellClick={vi.fn()}
+          onGenerateReport={(text) => capturedText.push(text)}
+        />
+      );
+
+      // 找到 04/20 當天的回報按鈕並點擊
+      const reportButtons = screen.getAllByRole('button');
+      const reportButton = reportButtons.find(btn => btn.querySelector('svg'));
+      fireEvent.click(reportButton!);
+
+      expect(capturedText).toHaveLength(1);
+      const lines = capturedText[0].split('\n');
+      // 第一行是日期
+      expect(lines[0]).toBe('04/20');
+      // 第二行應是 jobs[0]（工作A），不是 logs 裡先出現的工作B
+      expect(lines[1]).toMatch(/^工作A/);
+      // 第三行應是 jobs[1]（工作B）
+      expect(lines[2]).toMatch(/^工作B/);
+    });
+  });
 });
