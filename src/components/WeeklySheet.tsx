@@ -46,16 +46,18 @@ export const WeeklySheet: React.FC<WeeklySheetProps> = ({
   };
 
   const generateReportText = (dateStr: string) => {
-    const dayLogs = logs.filter(l => l.date === dateStr);
-    if (dayLogs.length === 0) return;
+    const dayLogMap = new Map(
+      logs.filter(l => l.date === dateStr).map(l => [l.jobId, l])
+    );
+    if (dayLogMap.size === 0) return;
 
     const formattedDate = format(new Date(dateStr), 'MM/dd');
     let report = `${formattedDate}\n`;
-    
+
     const amounts: number[] = [];
-    dayLogs.forEach(log => {
-      const job = jobs.find(j => j.id === log.jobId);
-      if (!job) return;
+    jobs.forEach(job => {
+      const log = dayLogMap.get(job.id);
+      if (!log) return;
 
       const currentPrice = weeklyPrices[job.id];
       let detail = '';
@@ -64,7 +66,7 @@ export const WeeklySheet: React.FC<WeeklySheetProps> = ({
       } else {
         detail = `${currentPrice}*${log.quantity}`;
       }
-      
+
       report += `${job.name} ${detail} ${log.amount}\n`;
       amounts.push(log.amount);
     });
