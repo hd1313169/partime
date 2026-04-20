@@ -5,6 +5,7 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { WeeklySheet } from '../../src/components/WeeklySheet';
 import { JobType, WorkLog } from '../../src/types';
 
@@ -52,9 +53,7 @@ describe('WeeklySheet Contrast - Width and Contrast Hooks', () => {
   });
 
   describe('generateReportText - 依 jobs 順序輸出', () => {
-    it('回報文字的行序應與 jobs 陣列順序一致，而非 logs 順序', async () => {
-      const { render, screen, fireEvent } = await import('@testing-library/react');
-      const { WeeklySheet } = await import('../../src/components/WeeklySheet');
+    it('回報文字的行序應與 jobs 陣列順序一致，而非 logs 順序', () => {
 
       const jobs: JobType[] = [
         { id: 'j-a', name: '工作A', calcType: 'PIECE', unitPrice: 10, color: '#aaa' },
@@ -83,9 +82,9 @@ describe('WeeklySheet Contrast - Width and Contrast Hooks', () => {
       );
 
       // 找到 04/20 當天的回報按鈕並點擊
-      const reportButtons = screen.getAllByRole('button');
-      const reportButton = reportButtons.find(btn => btn.querySelector('svg'));
-      fireEvent.click(reportButton!);
+      const reportButton = screen.getAllByTitle('生成回報文字')[0];
+      expect(reportButton).toBeDefined();
+      fireEvent.click(reportButton);
 
       expect(capturedText).toHaveLength(1);
       const lines = capturedText[0].split('\n');

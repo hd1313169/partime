@@ -110,6 +110,7 @@ export const WeeklySheet: React.FC<WeeklySheetProps> = ({
                     <button 
                       onClick={() => generateReportText(dateStr)}
                       className="button-icon-strong p-3"
+                      title="生成回報文字"
                     >
                       <FileText className="w-5 h-5" />
                     </button>
