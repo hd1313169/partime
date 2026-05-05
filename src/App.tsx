@@ -6,6 +6,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { JobType, WorkLog, WeeklyPriceConfig } from './types';
 import { WeeklySheet } from './components/WeeklySheet';
+import { MonthlyReport } from './components/MonthlyReport';
 import { LogModal } from './components/LogModal';
 import { ReportModal } from './components/ReportModal';
 import { JobManagementModal } from './components/JobManagementModal';
@@ -53,6 +54,7 @@ export default function App() {
   const [logModal, setLogModal] = useState<{ isOpen: boolean; job?: JobType; date?: string; log?: WorkLog }>({ isOpen: false });
   const [reportModal, setReportModal] = useState<{ isOpen: boolean; text: string }>({ isOpen: false, text: '' });
   const [jobManagementOpen, setJobManagementOpen] = useState(false);
+  const [view, setView] = useState<'weekly' | 'monthly'>('weekly');
 
   const weekStartISO = useMemo(() => format(startOfWeek(currentDate, { weekStartsOn: 1 }), 'yyyy-MM-dd'), [currentDate]);
 
@@ -182,10 +184,24 @@ export default function App() {
               <h1 className="text-xl font-black tracking-tight text-slate-900">個人工資管理系統</h1>
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Personal Salary Tracker</p>
             </div>
+            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+              <button
+                onClick={() => setView('weekly')}
+                className={`px-3 py-1.5 text-xs font-black rounded-lg transition-all ${view === 'weekly' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                週報
+              </button>
+              <button
+                onClick={() => setView('monthly')}
+                className={`px-3 py-1.5 text-xs font-black rounded-lg transition-all ${view === 'monthly' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                月報
+              </button>
+            </div>
           </div>
           
           <div className="flex items-center gap-3">
-            {!isCurrentWeek && (
+            {view === 'weekly' && !isCurrentWeek && (
               <button 
                 onClick={jumpToToday}
                 className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 font-bold rounded-2xl hover:bg-emerald-100 transition-all border border-emerald-100 whitespace-nowrap"
@@ -217,6 +233,7 @@ export default function App() {
               {apiError}
             </div>
           )}
+          {view === 'weekly' && (
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div>
               <h2 className="text-xl sm:text-3xl font-black text-slate-900 tracking-tight">薪資週報表</h2>
@@ -268,16 +285,21 @@ export default function App() {
               </div>
             </div>
           </div>
+          )}
           
-          <WeeklySheet 
-            logs={logs} 
-            jobs={jobs} 
-            currentDate={currentDate} 
-            weeklyPrices={currentWeekPrices}
-            onUpdateWeeklyPrice={handleUpdateWeeklyPrice}
-            onCellClick={(job, date, log) => setLogModal({ isOpen: true, job, date, log })}
-            onGenerateReport={(text) => setReportModal({ isOpen: true, text })}
-          />
+          {view === 'weekly' ? (
+            <WeeklySheet 
+              logs={logs} 
+              jobs={jobs} 
+              currentDate={currentDate} 
+              weeklyPrices={currentWeekPrices}
+              onUpdateWeeklyPrice={handleUpdateWeeklyPrice}
+              onCellClick={(job, date, log) => setLogModal({ isOpen: true, job, date, log })}
+              onGenerateReport={(text) => setReportModal({ isOpen: true, text })}
+            />
+          ) : (
+            <MonthlyReport logs={logs} jobs={jobs} />
+          )}
         </div>
       </main>
 
