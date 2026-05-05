@@ -12,6 +12,7 @@ API_PREFIX = "/api"
 binding = "DB"
 database_name = "partime-db-staging"
 database_id = "83e06a84-25ce-4575-89d8-3d0504fa5260"
+migrations_dir = "worker/db/migrations"
 
 [env.production]
 name = "partime-api-production"
@@ -23,3 +24,4 @@ API_PREFIX = "/api"
 binding = "DB"
 database_name = "partime-db-production"
 database_id = "97b686ea-7e8f-4cdc-9719-ed5aad45bb88"
+migrations_dir = "worker/db/migrations"

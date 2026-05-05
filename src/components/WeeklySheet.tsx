@@ -46,7 +46,7 @@ export const WeeklySheet: React.FC<WeeklySheetProps> = ({
   };
 
   const generateReportText = (dateStr: string) => {
-    const dayLogMap = new Map(
+    const dayLogMap = new Map<string, WorkLog>(
       logs.filter(l => l.date === dateStr).map(l => [l.jobId, l])
     );
     if (dayLogMap.size === 0) return;

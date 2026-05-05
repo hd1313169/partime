@@ -129,10 +129,13 @@ export function createApi() {
   // ── error handler ─────────────────────────────────────────────────────────
 
   app.onError((err, _c) => {
+    console.error('API Error:', err);
     if (err instanceof AppError) {
       return fromAppError(err);
     }
-    return fail('INTERNAL_ERROR', 'Internal Server Error', 500);
+    const message = err instanceof Error ? err.message : String(err);
+    const stack = err instanceof Error ? err.stack : undefined;
+    return fail('INTERNAL_ERROR', 'Internal Server Error', 500, { message, stack });
   });
 
   return app;
