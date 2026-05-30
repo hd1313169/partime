@@ -2,7 +2,8 @@
 import React, { useState, useMemo } from 'react';
 import { JobType, WorkLog } from '../types';
 import { computeMonthlyReport } from '../utils/monthly';
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { exportMonthToExcel } from '../utils/export';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Download } from 'lucide-react';
 import { addMonths, subMonths, addYears, subYears, format, getYear, getMonth } from 'date-fns';
 
 interface MonthlyReportProps {
@@ -81,6 +82,16 @@ export const MonthlyReport: React.FC<MonthlyReportProps> = ({ logs, jobs }) => {
               ))}
             </select>
           </div>
+
+          {/* 匯出 Excel */}
+          <button
+            onClick={() => exportMonthToExcel(logs, jobs, year, month)}
+            className="flex items-center gap-1.5 bg-white px-3 py-2 rounded-xl shadow-sm border border-slate-200 text-slate-500 hover:text-emerald-600 hover:bg-slate-50 transition-all text-xs font-bold"
+            title="匯出 Excel"
+          >
+            <Download className="w-4 h-4" />
+            <span>匯出</span>
+          </button>
         </div>
       </div>
 
