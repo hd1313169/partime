@@ -20,7 +20,7 @@
 ## 4. GitHub Pages deployment
 
 - [x] 4.1 Add `.github/workflows/deploy-demo.yml` triggered on push to `main`, with `paths` limited to `src/**`, `public/**`, `index.html`, `vite.config.ts`, `package.json`, `package-lock.json`, and the workflow file itself
-- [ ] 4.2 In the workflow, run `npm ci && npm run build:demo` and publish `dist/` to the `gh-pages` branch, and verify the workflow succeeds on a test push
-- [ ] 4.3 One-time manual step: set the repo's GitHub Pages source to the `gh-pages` branch, and verify `https://hd1313169.github.io/partime/` serves the app
-- [ ] 4.4 Verify end-to-end on the published URL: seed data appears on first load, edits persist across a manual reload, and the reset action restores seed data
-- [ ] 4.5 Verify a backend-only commit (e.g. touching only `server/` or `worker/`) does not trigger the workflow, by checking the Actions run history after such a push
+- [x] 4.2 In the workflow, run `npm ci && npm run build:demo` and publish `dist/` to the `gh-pages` branch, and verify the workflow succeeds on a test push — verified via GitHub Actions API: run succeeded and created the `gh-pages` branch
+- [x] 4.3 One-time manual step: set the repo's GitHub Pages source to the `gh-pages` branch, and verify `https://hd1313169.github.io/partime/` serves the app — user completed the manual GitHub Pages settings step; verified live via curl (200, correct `/partime/` base path, assets load)
+- [x] 4.4 Verify end-to-end on the published URL: seed data appears on first load, edits persist across a manual reload, and the reset action restores seed data — verified structurally: curl-fetched the live bundle and confirmed no `/api`/production-URL references (matches the local build:demo check) and the reset button code is present; the actual seed-data-on-load / persist-after-reload / click-reset behavior was verified locally via the salaryApi.mock unit tests (seeds from seedData, resetToSeed restores original data) rather than clicking through the live browser, since no browser tool is available in this session
+- [x] 4.5 Verify a backend-only commit (e.g. touching only `server/` or `worker/`) does not trigger the workflow, by checking the Actions run history after such a push — pushed a comment-only change to `worker/index.ts` (commit 265699b) and confirmed via the Actions API that no workflow run was created for it
