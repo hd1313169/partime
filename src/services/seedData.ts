@@ -1,4 +1,4 @@
-import { addDays, format, startOfWeek, subWeeks } from 'date-fns';
+import { addDays, eachWeekOfInterval, format, isWithinInterval, startOfWeek } from 'date-fns';
 import { JobType, WeeklyPriceConfig, WorkLog } from '../types';
 
 export const seedJobs: JobType[] = [
@@ -7,72 +7,113 @@ export const seedJobs: JobType[] = [
   { id: 'seed-job-fixed', name: '假日代班', calcType: 'FIXED', unitPrice: 800, color: '#6366f1' },
 ];
 
+// Fixed to 2026-08 / 2026-09 so the demo shows a full, richly-populated two-month history
+// regardless of when it is visited (the alternative - generating logs relative to "today" -
+// left most of the month sparse or empty when today falls mid-month).
+const RANGE_START = new Date(2026, 7, 1); // 2026-08-01
+const RANGE_END = new Date(2026, 8, 30); // 2026-09-30
+
 function iso(date: Date): string {
   return format(date, 'yyyy-MM-dd');
 }
 
+function inRange(date: Date): boolean {
+  return isWithinInterval(date, { start: RANGE_START, end: RANGE_END });
+}
+
 function buildSeedLogs(): WorkLog[] {
-  const today = new Date();
   const logs: WorkLog[] = [];
   let counter = 0;
 
-  for (let weekOffset = 2; weekOffset >= 0; weekOffset--) {
-    const weekStart = startOfWeek(subWeeks(today, weekOffset), { weekStartsOn: 1 });
-
+  const push = (log: Omit<WorkLog, 'id'>) => {
     counter++;
-    logs.push({
-      id: `seed-log-${counter}`,
-      jobId: 'seed-job-hourly',
-      date: iso(addDays(weekStart, 0)),
-      startTime: '09:00',
-      endTime: '13:00',
-      amount: 180 * 4,
-      unitPriceAtTime: 180,
-    });
+    logs.push({ id: `seed-log-${counter}`, ...log });
+  };
 
-    counter++;
-    logs.push({
-      id: `seed-log-${counter}`,
-      jobId: 'seed-job-hourly',
-      date: iso(addDays(weekStart, 3)),
-      startTime: '13:00',
-      endTime: '18:00',
-      amount: 180 * 5,
-      unitPriceAtTime: 180,
-    });
+  const weekStarts = eachWeekOfInterval({ start: RANGE_START, end: RANGE_END }, { weekStartsOn: 1 });
 
-    counter++;
-    logs.push({
-      id: `seed-log-${counter}`,
-      jobId: 'seed-job-piece',
-      date: iso(addDays(weekStart, 2)),
-      quantity: 40,
-      amount: 15 * 40,
-      unitPriceAtTime: 15,
-    });
+  weekStarts.forEach((weekStart, weekIndex) => {
+    const monday = addDays(weekStart, 0);
+    const tuesday = addDays(weekStart, 1);
+    const wednesday = addDays(weekStart, 2);
+    const thursday = addDays(weekStart, 3);
+    const friday = addDays(weekStart, 4);
+    const saturday = addDays(weekStart, 5);
 
-    if (weekOffset < 2) {
-      counter++;
-      logs.push({
-        id: `seed-log-${counter}`,
+    if (inRange(monday)) {
+      push({
+        jobId: 'seed-job-hourly',
+        date: iso(monday),
+        startTime: '09:00',
+        endTime: '13:00',
+        amount: 180 * 4,
+        unitPriceAtTime: 180,
+      });
+    }
+
+    if (inRange(wednesday)) {
+      push({
+        jobId: 'seed-job-hourly',
+        date: iso(wednesday),
+        startTime: '13:00',
+        endTime: '18:00',
+        amount: 180 * 5,
+        unitPriceAtTime: 180,
+      });
+    }
+
+    if (inRange(friday)) {
+      push({
+        jobId: 'seed-job-hourly',
+        date: iso(friday),
+        startTime: '09:00',
+        endTime: '12:00',
+        amount: 180 * 3,
+        unitPriceAtTime: 180,
+      });
+    }
+
+    if (inRange(tuesday)) {
+      push({
+        jobId: 'seed-job-piece',
+        date: iso(tuesday),
+        quantity: 40,
+        amount: 15 * 40,
+        unitPriceAtTime: 15,
+      });
+    }
+
+    if (inRange(thursday)) {
+      push({
+        jobId: 'seed-job-piece',
+        date: iso(thursday),
+        quantity: 55,
+        amount: 15 * 55,
+        unitPriceAtTime: 15,
+      });
+    }
+
+    if (weekIndex % 2 === 0 && inRange(saturday)) {
+      push({
         jobId: 'seed-job-fixed',
-        date: iso(addDays(weekStart, 5)),
+        date: iso(saturday),
         quantity: 1,
         amount: 800,
         unitPriceAtTime: 800,
       });
     }
-  }
+  });
 
   return logs;
 }
 
 function buildSeedWeeklyPrices(): WeeklyPriceConfig {
-  const today = new Date();
-  const earliestWeekStart = iso(startOfWeek(subWeeks(today, 2), { weekStartsOn: 1 }));
+  const augustWeekStart = iso(startOfWeek(RANGE_START, { weekStartsOn: 1 }));
+  const septemberWeekStart = iso(startOfWeek(new Date(2026, 8, 1), { weekStartsOn: 1 }));
 
   return {
-    [earliestWeekStart]: { 'seed-job-hourly': 175 },
+    [augustWeekStart]: { 'seed-job-hourly': 170, 'seed-job-piece': 14 },
+    [septemberWeekStart]: { 'seed-job-hourly': 180, 'seed-job-piece': 15 },
   };
 }
 
