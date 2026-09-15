@@ -31,3 +31,9 @@ export interface DailyTotal {
   total: number;
   logs: WorkLog[];
 }
+
+export interface BootstrapData {
+  jobs: JobType[];
+  logs: WorkLog[];
+  weeklyPrices: WeeklyPriceConfig;
+}

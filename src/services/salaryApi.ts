@@ -1,17 +1,15 @@
-import { JobType, WeeklyPriceConfig, WorkLog } from '../types';
+import { BootstrapData, JobType, WorkLog } from '../types';
 import { apiRequest } from './apiClient';
+import { salaryApiMock } from './salaryApi.mock';
+import { isDemoMode } from './demoMode';
 
-export interface BootstrapData {
-  jobs: JobType[];
-  logs: WorkLog[];
-  weeklyPrices: WeeklyPriceConfig;
-}
+export type { BootstrapData };
 
 const jsonHeaders = {
   'Content-Type': 'application/json',
 };
 
-export const salaryApi = {
+const realSalaryApi = {
   getBootstrap: () => apiRequest<BootstrapData>('/api/bootstrap'),
   createJob: (job: JobType) =>
     apiRequest<JobType>('/api/jobs', {
@@ -52,3 +50,5 @@ export const salaryApi = {
       body: JSON.stringify({ jobId, unitPrice }),
     }),
 };
+
+export const salaryApi: typeof realSalaryApi = isDemoMode ? salaryApiMock : realSalaryApi;

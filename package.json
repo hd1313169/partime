@@ -10,6 +10,7 @@
     "dev:server": "tsx watch server/index.ts",
     "build": "vite build",
     "build:pages": "vite build --mode pages",
+    "build:demo": "vite build --mode demo",
     "build:worker": "wrangler deploy --env staging --dry-run",
     "build:worker:production": "wrangler deploy --env production --dry-run",
     "deploy": "node -e \"console.error('Use npm run deploy:staging or npm run deploy:production'); process.exit(1)\"",
@@ -43,7 +44,8 @@
     "react-dom": "^19.0.0",
     "recharts": "^3.7.0",
     "tailwind-merge": "^3.5.0",
-    "vite": "^6.2.0"
+    "vite": "^6.2.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260415.0",

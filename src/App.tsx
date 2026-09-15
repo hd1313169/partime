@@ -10,8 +10,11 @@ import { MonthlyReport } from './components/MonthlyReport';
 import { LogModal } from './components/LogModal';
 import { ReportModal } from './components/ReportModal';
 import { JobManagementModal } from './components/JobManagementModal';
-import { mapApiError } from './services/apiClient';
+import { UnlockGate } from './components/UnlockGate';
+import { DemoResetButton } from './components/DemoResetButton';
+import { getStoredAppSecret, isUnauthorizedError, mapApiError, setStoredAppSecret } from './services/apiClient';
 import { salaryApi } from './services/salaryApi';
+import { isDemoMode } from './services/demoMode';
 import { Wallet, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, RotateCcw, Settings2 } from 'lucide-react';
 import { addWeeks, subWeeks, format, startOfWeek, addMonths, subMonths, addYears, subYears, isSameWeek, addDays } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
@@ -22,10 +25,14 @@ export default function App() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [weeklyPrices, setWeeklyPrices] = useState<WeeklyPriceConfig>({});
   const [apiError, setApiError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isUnlocked, setIsUnlocked] = useState<boolean>(() => isDemoMode || Boolean(getStoredAppSecret()));
+  const [isLoading, setIsLoading] = useState<boolean>(() => isDemoMode || Boolean(getStoredAppSecret()));
 
   useEffect(() => {
+    if (!isUnlocked) return;
+
     let cancelled = false;
+    setIsLoading(true);
 
     salaryApi
       .getBootstrap()
@@ -37,7 +44,11 @@ export default function App() {
       })
       .catch((error) => {
         if (cancelled) return;
-        setApiError(mapApiError(error));
+        if (isUnauthorizedError(error)) {
+          setIsUnlocked(false);
+        } else {
+          setApiError(mapApiError(error));
+        }
       })
       .finally(() => {
         if (!cancelled) {
@@ -48,7 +59,18 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [isUnlocked]);
+
+  const handleUnlockSubmit = async (secret: string) => {
+    setStoredAppSecret(secret);
+    const data = await salaryApi.getBootstrap();
+    setJobs(data.jobs);
+    setLogs(data.logs);
+    setWeeklyPrices(data.weeklyPrices);
+    setApiError(null);
+    setIsLoading(false);
+    setIsUnlocked(true);
+  };
 
   // Modal states
   const [logModal, setLogModal] = useState<{ isOpen: boolean; job?: JobType; date?: string; log?: WorkLog }>({ isOpen: false });
@@ -86,7 +108,11 @@ export default function App() {
     }));
 
     salaryApi.setWeeklyPrice(weekStartISO, jobId, price).catch((error) => {
-      setApiError(mapApiError(error));
+      if (isUnauthorizedError(error)) {
+        setIsUnlocked(false);
+      } else {
+        setApiError(mapApiError(error));
+      }
     });
   };
 
@@ -108,7 +134,11 @@ export default function App() {
         return [...prev, log];
       });
     } catch (error) {
-      setApiError(mapApiError(error));
+      if (isUnauthorizedError(error)) {
+        setIsUnlocked(false);
+      } else {
+        setApiError(mapApiError(error));
+      }
     }
   };
 
@@ -117,7 +147,11 @@ export default function App() {
       await salaryApi.deleteLog(id);
       setLogs(prev => prev.filter(l => l.id !== id));
     } catch (error) {
-      setApiError(mapApiError(error));
+      if (isUnauthorizedError(error)) {
+        setIsUnlocked(false);
+      } else {
+        setApiError(mapApiError(error));
+      }
     }
   };
 
@@ -157,7 +191,11 @@ export default function App() {
       await Promise.all(jobIdsToDelete.map(id => salaryApi.deleteJob(id)));
       setJobs(updatedJobs);
     } catch (error) {
-      setApiError(mapApiError(error));
+      if (isUnauthorizedError(error)) {
+        setIsUnlocked(false);
+      } else {
+        setApiError(mapApiError(error));
+      }
     }
   };
 
@@ -174,6 +212,8 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-emerald-100 selection:text-emerald-900">
+      {!isUnlocked && <UnlockGate onSubmit={handleUnlockSubmit} />}
+
       <header className="app-topbar">
         <div className="app-shell-wide px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -210,7 +250,8 @@ export default function App() {
                 回到本週
               </button>
             )}
-            <button 
+            <DemoResetButton />
+            <button
               onClick={() => setJobManagementOpen(true)}
               className="button-secondary-strong group"
             >
