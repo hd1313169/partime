@@ -12,6 +12,7 @@ import { ReportModal } from './components/ReportModal';
 import { JobManagementModal } from './components/JobManagementModal';
 import { UnlockGate } from './components/UnlockGate';
 import { DemoResetButton } from './components/DemoResetButton';
+import { DemoFooter } from './components/DemoFooter';
 import { getStoredAppSecret, isUnauthorizedError, mapApiError, setStoredAppSecret } from './services/apiClient';
 import { salaryApi } from './services/salaryApi';
 import { isDemoMode } from './services/demoMode';
@@ -385,6 +386,8 @@ export default function App() {
           </p>
         </div>
       </footer>
+
+      <DemoFooter />
     </div>
   );
 }
