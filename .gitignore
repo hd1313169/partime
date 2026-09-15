@@ -6,3 +6,6 @@ coverage/
 *.log
 .env*
 !.env.example
+!.env.demo
+.dev.vars
+!.dev.vars.example

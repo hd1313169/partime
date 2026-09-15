@@ -2,19 +2,21 @@ import { describe, expect, it } from 'vitest';
 import { createApi } from '../../worker/http/create-api';
 import { FakeD1Database } from './fake-d1';
 
+const TEST_SECRET = 'test-secret';
+
 describe('worker api contract', () => {
   const app = createApi();
 
   /** Create a fresh isolated DB + env for each test that mutates state. */
   function freshEnv() {
-    return { DB: new FakeD1Database() as unknown as D1Database };
+    return { DB: new FakeD1Database() as unknown as D1Database, APP_SECRET: TEST_SECRET, ALLOWED_ORIGINS: 'https://example.com' };
   }
 
   async function apiRequest(method: string, path: string, body?: unknown, env = freshEnv()) {
-    const init: RequestInit = { method };
+    const init: RequestInit = { method, headers: { 'X-App-Secret': TEST_SECRET } };
     if (body !== undefined) {
       init.body = JSON.stringify(body);
-      init.headers = { 'Content-Type': 'application/json' };
+      init.headers = { ...init.headers, 'Content-Type': 'application/json' };
     }
     return app.request(path, init, env);
   }
@@ -167,7 +169,7 @@ describe('worker api contract', () => {
       {
         method: 'POST',
         body: '{"id":"j9",',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-App-Secret': TEST_SECRET },
       },
       freshEnv(),
     );
@@ -175,5 +177,65 @@ describe('worker api contract', () => {
     const body = (await res.json()) as { error: { code: string; message: string } };
     expect(body.error.code).toBe('VALIDATION_ERROR');
     expect(body.error.message).toBe('Invalid JSON body');
+  });
+
+  // ── shared-secret auth ───────────────────────────────────────────────────
+
+  it('GET /api/jobs without X-App-Secret header → 401 UNAUTHORIZED', async () => {
+    const res = await app.request('/api/jobs', { method: 'GET' }, freshEnv());
+    expect(res.status).toBe(401);
+    const body = (await res.json()) as { error: { code: string } };
+    expect(body.error.code).toBe('UNAUTHORIZED');
+  });
+
+  it('GET /api/jobs with wrong X-App-Secret header → 401 UNAUTHORIZED', async () => {
+    const res = await app.request(
+      '/api/jobs',
+      { method: 'GET', headers: { 'X-App-Secret': 'wrong-secret' } },
+      freshEnv(),
+    );
+    expect(res.status).toBe(401);
+    const body = (await res.json()) as { error: { code: string } };
+    expect(body.error.code).toBe('UNAUTHORIZED');
+  });
+
+  it('GET /api/jobs with correct X-App-Secret header → 200', async () => {
+    const res = await apiRequest('GET', '/api/jobs');
+    expect(res.status).toBe(200);
+  });
+
+  it('GET /api/jobs when APP_SECRET is not configured → 401 (fails closed)', async () => {
+    const res = await app.request(
+      '/api/jobs',
+      { method: 'GET', headers: { 'X-App-Secret': 'anything' } },
+      { DB: new FakeD1Database() as unknown as D1Database },
+    );
+    expect(res.status).toBe(401);
+  });
+
+  it('GET /api/health requires no X-App-Secret header', async () => {
+    const res = await app.request('/api/health', { method: 'GET' }, freshEnv());
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ data: { ok: true } });
+  });
+
+  // ── CORS origin allow-list ───────────────────────────────────────────────
+
+  it('preflight from an allowed origin → CORS headers permit it', async () => {
+    const res = await app.request(
+      '/api/jobs',
+      { method: 'OPTIONS', headers: { Origin: 'https://example.com', 'Access-Control-Request-Method': 'GET' } },
+      freshEnv(),
+    );
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBe('https://example.com');
+  });
+
+  it('preflight from a disallowed origin → no CORS allow-origin header', async () => {
+    const res = await app.request(
+      '/api/jobs',
+      { method: 'OPTIONS', headers: { Origin: 'https://evil.example', 'Access-Control-Request-Method': 'GET' } },
+      freshEnv(),
+    );
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBeNull();
   });
 });

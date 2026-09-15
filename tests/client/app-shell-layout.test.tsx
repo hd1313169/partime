@@ -7,6 +7,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import App from '../../src/App';
 import { salaryApi } from '../../src/services/salaryApi';
+import { setStoredAppSecret } from '../../src/services/apiClient';
 
 // Mock salaryApi
 vi.mock('../../src/services/salaryApi', () => ({
@@ -25,6 +26,8 @@ vi.mock('../../src/services/salaryApi', () => ({
 describe('App Shell Layout - Width and Contrast Hooks', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // App only loads data (and renders the loading banner) once unlocked.
+    setStoredAppSecret('test-secret');
   });
 
   it('renders App component with required CSS hooks for layout', () => {

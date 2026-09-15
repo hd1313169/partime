@@ -10,6 +10,8 @@ import { fail, fromAppError, ok } from './response';
 
 export interface WorkerEnv {
   DB: D1Database;
+  APP_SECRET?: string;
+  ALLOWED_ORIGINS?: string;
 }
 
 async function readJsonBody(c: { req: { json: () => Promise<unknown> } }) {
@@ -31,16 +33,38 @@ function makeService(db: D1Database) {
 export function createApi() {
   const app = new Hono<{ Bindings: WorkerEnv }>();
 
-  // Allow Pages frontend to call Worker APIs directly across origins.
+  // Allow only explicitly configured frontend origins to call Worker APIs cross-origin.
   app.use(
     '/api/*',
     cors({
-      origin: '*',
+      origin: (origin, c) => {
+        const allowed = (c.env.ALLOWED_ORIGINS ?? '')
+          .split(',')
+          .map((value) => value.trim())
+          .filter(Boolean);
+        return allowed.includes(origin) ? origin : undefined;
+      },
       allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-      allowHeaders: ['Content-Type'],
+      allowHeaders: ['Content-Type', 'X-App-Secret'],
       maxAge: 86400,
     }),
   );
+
+  // Require a shared secret on every request except the health check.
+  // Fails closed: a missing APP_SECRET binding rejects all protected requests
+  // rather than treating an unconfigured secret as "no auth required".
+  app.use('/api/*', async (c, next) => {
+    if (c.req.path === '/api/health') {
+      return next();
+    }
+
+    const provided = c.req.header('X-App-Secret');
+    if (!c.env.APP_SECRET || provided !== c.env.APP_SECRET) {
+      return fail('UNAUTHORIZED', 'Unauthorized', 401);
+    }
+
+    return next();
+  });
 
   // ── health ────────────────────────────────────────────────────────────────
 
