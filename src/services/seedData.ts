@@ -7,11 +7,11 @@ export const seedJobs: JobType[] = [
   { id: 'seed-job-fixed', name: '假日代班', calcType: 'FIXED', unitPrice: 800, color: '#6366f1' },
 ];
 
-// Fixed to 2026-08 / 2026-09 so the demo shows a full, richly-populated two-month history
-// regardless of when it is visited (the alternative - generating logs relative to "today" -
-// left most of the month sparse or empty when today falls mid-month).
+// Fixed to 2026-08 through 2026-12 so the demo shows a full, richly-populated multi-month
+// history regardless of when it is visited (the alternative - generating logs relative to
+// "today" - left most of the month sparse or empty when today falls mid-month).
 const RANGE_START = new Date(2026, 7, 1); // 2026-08-01
-const RANGE_END = new Date(2026, 8, 30); // 2026-09-30
+const RANGE_END = new Date(2026, 11, 31); // 2026-12-31
 
 function iso(date: Date): string {
   return format(date, 'yyyy-MM-dd');
@@ -108,12 +108,14 @@ function buildSeedLogs(): WorkLog[] {
 }
 
 function buildSeedWeeklyPrices(): WeeklyPriceConfig {
-  const augustWeekStart = iso(startOfWeek(RANGE_START, { weekStartsOn: 1 }));
-  const septemberWeekStart = iso(startOfWeek(new Date(2026, 8, 1), { weekStartsOn: 1 }));
+  const weekStartOf = (month: number) => iso(startOfWeek(new Date(2026, month, 1), { weekStartsOn: 1 }));
 
   return {
-    [augustWeekStart]: { 'seed-job-hourly': 170, 'seed-job-piece': 14 },
-    [septemberWeekStart]: { 'seed-job-hourly': 180, 'seed-job-piece': 15 },
+    [weekStartOf(7)]: { 'seed-job-hourly': 170, 'seed-job-piece': 14 }, // August
+    [weekStartOf(8)]: { 'seed-job-hourly': 180, 'seed-job-piece': 15 }, // September
+    [weekStartOf(9)]: { 'seed-job-hourly': 185, 'seed-job-piece': 15 }, // October
+    [weekStartOf(10)]: { 'seed-job-hourly': 185, 'seed-job-piece': 16 }, // November
+    [weekStartOf(11)]: { 'seed-job-hourly': 190, 'seed-job-piece': 16 }, // December
   };
 }
 
