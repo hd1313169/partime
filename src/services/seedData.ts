@@ -5,6 +5,8 @@ export const seedJobs: JobType[] = [
   { id: 'seed-job-hourly', name: '倉庫理貨', calcType: 'HOURLY', unitPrice: 180, color: '#10b981' },
   { id: 'seed-job-piece', name: '手工包裝', calcType: 'PIECE', unitPrice: 15, color: '#f59e0b' },
   { id: 'seed-job-fixed', name: '假日代班', calcType: 'FIXED', unitPrice: 800, color: '#6366f1' },
+  { id: 'seed-job-flyer', name: '發傳單', calcType: 'FIXED', unitPrice: 500, color: '#0ea5e9' },
+  { id: 'seed-job-coach', name: '駐點教練', calcType: 'HOURLY', unitPrice: 300, color: '#ec4899' },
 ];
 
 // Fixed to 2026-08 through 2026-12 so the demo shows a full, richly-populated multi-month
@@ -102,6 +104,28 @@ function buildSeedLogs(): WorkLog[] {
         unitPriceAtTime: 800,
       });
     }
+
+    const sunday = addDays(weekStart, 6);
+    if (weekIndex % 2 === 1 && inRange(sunday)) {
+      push({
+        jobId: 'seed-job-flyer',
+        date: iso(sunday),
+        quantity: 1,
+        amount: 500,
+        unitPriceAtTime: 500,
+      });
+    }
+
+    if (inRange(tuesday)) {
+      push({
+        jobId: 'seed-job-coach',
+        date: iso(tuesday),
+        startTime: '19:00',
+        endTime: '21:00',
+        amount: 300 * 2,
+        unitPriceAtTime: 300,
+      });
+    }
   });
 
   return logs;
@@ -111,11 +135,11 @@ function buildSeedWeeklyPrices(): WeeklyPriceConfig {
   const weekStartOf = (month: number) => iso(startOfWeek(new Date(2026, month, 1), { weekStartsOn: 1 }));
 
   return {
-    [weekStartOf(7)]: { 'seed-job-hourly': 170, 'seed-job-piece': 14 }, // August
-    [weekStartOf(8)]: { 'seed-job-hourly': 180, 'seed-job-piece': 15 }, // September
-    [weekStartOf(9)]: { 'seed-job-hourly': 185, 'seed-job-piece': 15 }, // October
-    [weekStartOf(10)]: { 'seed-job-hourly': 185, 'seed-job-piece': 16 }, // November
-    [weekStartOf(11)]: { 'seed-job-hourly': 190, 'seed-job-piece': 16 }, // December
+    [weekStartOf(7)]: { 'seed-job-hourly': 170, 'seed-job-piece': 14, 'seed-job-coach': 280 }, // August
+    [weekStartOf(8)]: { 'seed-job-hourly': 180, 'seed-job-piece': 15, 'seed-job-coach': 300 }, // September
+    [weekStartOf(9)]: { 'seed-job-hourly': 185, 'seed-job-piece': 15, 'seed-job-flyer': 500 }, // October
+    [weekStartOf(10)]: { 'seed-job-hourly': 185, 'seed-job-piece': 16, 'seed-job-coach': 320 }, // November
+    [weekStartOf(11)]: { 'seed-job-hourly': 190, 'seed-job-piece': 16, 'seed-job-flyer': 550 }, // December
   };
 }
 
