@@ -19,7 +19,7 @@ describe('salaryApi.mock', () => {
     const data = await salaryApiMock.getBootstrap();
     expect(data.jobs).toHaveLength(seedJobs.length);
     expect(localStorage.getItem('salary_tracker_jobs')).not.toBeNull();
-  });
+  }, 15000); // cold import of seedData is slow when run in parallel with recharts-heavy suites
 
   it('create/update/delete a job round-trips through the in-memory store and persists', async () => {
     const { salaryApiMock } = await freshMock();
