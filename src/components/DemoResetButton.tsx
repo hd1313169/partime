@@ -16,10 +16,10 @@ export const DemoResetButton: React.FC = () => {
       onClick={() => {
         void handleReset();
       }}
-      className="button-secondary-strong group"
+      className="button-secondary-strong"
       title="重置示範資料"
     >
-      <RefreshCcw className="w-4 h-4 text-slate-400 group-hover:text-emerald-600 transition-colors" />
+      <RefreshCcw className="w-4 h-4 text-muted" />
       <span className="hidden sm:inline">重置示範資料</span>
     </button>
   );

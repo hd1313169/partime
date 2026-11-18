@@ -1,59 +1,195 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", "Segoe UI", system-ui, sans-serif;
+
+  --color-ground: #fbfbfc;
+  --color-surface: #ffffff;
+  --color-sunken: #f3f4f6;
+  --color-ink: #16171b;
+  --color-ink-2: #3b3e46;
+  --color-muted: #686c78;
+  --color-faint: #9a9ea8;
+  --color-line: #e6e7eb;
+  --color-line-strong: #d4d6dc;
+  --color-accent: #4f46e5;
+  --color-accent-hover: #4338ca;
+  --color-accent-soft: #eef0fe;
+  --color-danger: #c42b2b;
+  --color-danger-soft: #fdf0f0;
+
+  --radius-ctl: 8px;
+  --radius-sheet: 14px;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-ground text-ink antialiased;
+    font-feature-settings: "tnum" 1;
+  }
+
+  ::selection {
+    background: var(--color-accent-soft);
+    color: var(--color-accent-hover);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  input,
+  select,
+  textarea {
+    caret-color: var(--color-accent);
+  }
+
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line-strong) transparent;
+  }
+}
+
 @layer components {
   .app-shell-wide {
-    @apply max-w-[90rem] mx-auto;
+    @apply max-w-[80rem] mx-auto;
   }
 
   .app-topbar {
-    @apply bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30;
+    @apply bg-ground border-b border-line sticky top-0 z-30;
   }
 
-  .surface-structural {
-    @apply bg-slate-100 border border-slate-200;
+  .num {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
   }
 
-  .surface-structural-strong {
-    @apply bg-slate-900 text-white;
+  /* Segmented control */
+  .segmented {
+    @apply inline-flex items-center p-0.5 rounded-[var(--radius-ctl)] bg-sunken border border-line;
+  }
+
+  .segmented > button {
+    @apply px-3.5 h-8 text-[15px] font-medium text-muted rounded-[6px] transition-colors;
+  }
+
+  .segmented > button[aria-pressed="true"] {
+    @apply bg-surface text-ink;
+    box-shadow: 0 1px 2px rgb(22 23 27 / 0.08), 0 0 0 1px rgb(22 23 27 / 0.04);
+  }
+
+  .btn-primary {
+    @apply btn bg-accent text-white hover:bg-accent-hover;
+  }
+
+  .btn-ghost {
+    @apply btn text-ink-2 hover:bg-sunken;
+  }
+
+  .btn-danger {
+    @apply btn text-danger hover:bg-danger-soft;
   }
 
   .button-secondary-strong {
-    @apply flex items-center gap-2 px-4 py-2 bg-white border-2 border-slate-300 text-slate-700 font-bold rounded-2xl hover:bg-slate-50 hover:border-slate-400 transition-all shadow-sm;
+    @apply btn bg-surface border border-line text-ink-2 hover:border-line-strong hover:bg-sunken;
   }
 
-  /* Feedback banners with stronger contrast */
+  .icon-btn {
+    @apply inline-flex items-center justify-center w-8 h-8 rounded-[var(--radius-ctl)] text-muted hover:text-ink hover:bg-sunken transition-colors;
+  }
+
+  /* Inputs */
+  .field {
+    @apply w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius-ctl)] text-[17px] text-ink outline-none transition-colors placeholder:text-faint;
+  }
+
+  .field:hover {
+    @apply border-line-strong;
+  }
+
+  .field:focus {
+    @apply border-accent;
+    box-shadow: 0 0 0 3px var(--color-accent-soft);
+  }
+
+  .field-label {
+    @apply block text-[15px] font-medium text-muted mb-1.5;
+  }
+
+  .price-input {
+    @apply w-16 h-8 px-1.5 bg-transparent border border-transparent rounded-[6px] text-[15px] text-ink-2 outline-none transition-colors text-right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .price-input:hover {
+    @apply border-line bg-surface;
+  }
+
+  .price-input:focus {
+    @apply border-accent bg-surface text-ink;
+    box-shadow: 0 0 0 3px var(--color-accent-soft);
+  }
+
+  /* Feedback */
   .feedback-banner-strong {
-    @apply rounded-2xl border px-4 py-3 text-sm font-bold;
+    @apply rounded-[var(--radius-ctl)] border px-3.5 py-2.5 text-sm font-medium;
   }
 
   .feedback-banner-strong.loading {
-    @apply bg-emerald-100 border-emerald-300 text-emerald-800;
+    @apply bg-surface border-line text-muted;
   }
 
   .feedback-banner-strong.error {
-    @apply bg-rose-100 border-rose-300 text-rose-800;
+    @apply bg-danger-soft border-danger/25 text-danger;
   }
 
-  /* Mobile contrast hooks */
+  /* Weekly sheet */
   .mobile-day-card-header {
-    @apply bg-slate-100 border-b border-slate-200;
+    @apply bg-transparent;
   }
 
-  /* Desktop table contrast hooks */
   .desktop-weekly-head {
-    @apply bg-slate-100 border-b border-slate-200;
+    @apply bg-surface border-b border-line;
   }
 
   .desktop-weekly-sticky-lead {
-    @apply bg-slate-50 border-r border-slate-100;
+    @apply bg-surface;
   }
 
   .desktop-weekly-sticky-total {
-    @apply bg-slate-50 border-l border-slate-100;
+    @apply bg-surface;
   }
 
-  /* Strong icon button */
-  .button-icon-strong {
-    @apply bg-emerald-600 text-white rounded-2xl shadow-lg shadow-emerald-100 active:scale-95 transition-all;
+  /* Sheet / dialog */
+  .scrim {
+    @apply fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-ink/30;
   }
+
+  .sheet {
+    @apply bg-surface w-full rounded-t-[var(--radius-sheet)] sm:rounded-[var(--radius-sheet)] border border-line overflow-hidden;
+    box-shadow: 0 24px 48px -12px rgb(22 23 27 / 0.22), 0 4px 12px -4px rgb(22 23 27 / 0.08);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+@utility btn {
+  @apply inline-flex items-center justify-center gap-1.5 h-10 px-4 text-[15px] font-medium rounded-[var(--radius-ctl)] transition-colors whitespace-nowrap disabled:opacity-45 disabled:cursor-not-allowed;
 }

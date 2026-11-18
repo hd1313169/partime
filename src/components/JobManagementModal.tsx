@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { JobType } from '../types';
-import { X, Trash2, Save, Plus, Settings2, Palette } from 'lucide-react';
+import { Select } from './Select';
+import { X, Trash2, Save, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface JobManagementModalProps {
@@ -60,108 +61,113 @@ export const JobManagementModal: React.FC<JobManagementModalProps> = ({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+      <div className="scrim" onClick={onClose}>
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="jobs-title"
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 24 }}
+          transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+          className="sheet sm:max-w-2xl flex flex-col max-h-[92vh]"
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
         >
-          <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-            <div className="flex items-center gap-2">
-              <Settings2 className="w-5 h-5 text-emerald-600" />
-              <h3 className="text-xl font-bold text-slate-900">工作項目管理</h3>
+          <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-line">
+            <div>
+              <h3 id="jobs-title" className="text-[19px] font-semibold text-ink">工作項目管理</h3>
+              <p className="text-[15px] text-muted mt-0.5">設定名稱、計算方式、單價與代表色</p>
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full transition-colors">
-              <X className="w-5 h-5 text-slate-500" />
+            <button onClick={onClose} className="icon-btn -mr-1.5" aria-label="關閉">
+              <X className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="p-4 sm:p-6 max-h-[70vh] overflow-y-auto space-y-4">
-            {editedJobs.map(job => (
-              <div key={job.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-4 group hover:border-emerald-200 transition-all">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                  <div className="flex-1">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">項目名稱</label>
-                    <input
-                      type="text"
-                      value={job.name}
-                      onChange={(e) => handleUpdateJob(job.id, { name: e.target.value })}
-                      className="w-full bg-white border-2 border-transparent focus:border-emerald-500 rounded-xl px-3 py-2 font-bold text-slate-900 transition-all outline-none"
-                    />
-                  </div>
-                  
-                  <div className="flex gap-4">
-                    <div className="flex-1 sm:w-32">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">計算方式</label>
-                      <select
-                        value={job.calcType}
-                        onChange={(e) => handleUpdateJob(job.id, { calcType: e.target.value as any })}
-                        className="w-full bg-white border-2 border-transparent focus:border-emerald-500 rounded-xl px-3 py-2 font-bold text-slate-900 transition-all outline-none appearance-none cursor-pointer"
-                      >
-                        <option value="HOURLY">時薪制</option>
-                        <option value="PIECE">計件制</option>
-                        <option value="FIXED">次數制</option>
-                      </select>
-                    </div>
-
-                    <div className="flex-1 sm:w-28">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">預設單價</label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300">NT$</span>
-                        <input
-                          type="number"
-                          value={job.unitPrice}
-                          onChange={(e) => handleUpdateJob(job.id, { unitPrice: Number(e.target.value) })}
-                          className="w-full bg-white border-2 border-transparent focus:border-emerald-500 rounded-xl pl-10 pr-3 py-2 text-right font-black text-slate-900 transition-all outline-none"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-end gap-2 pt-2 sm:pt-0">
+          <div className="flex-1 overflow-y-auto px-5">
+            <ul className="divide-y divide-line">
+              {editedJobs.map(job => (
+                <li key={job.id} className="py-4">
+                  <div className="grid grid-cols-[auto_1fr] sm:grid-cols-[auto_1fr_8rem_7rem_auto] items-end gap-x-3 gap-y-3">
                     <button
                       onClick={() => {
                         const nextColor = COLORS[(COLORS.indexOf(job.color) + 1) % COLORS.length];
                         handleUpdateJob(job.id, { color: nextColor });
                       }}
-                      className="p-2.5 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all"
+                      className="w-11 h-11 rounded-[var(--radius-ctl)] border border-line grid place-items-center hover:border-line-strong transition-colors"
                       title="更換顏色"
+                      aria-label={`更換 ${job.name} 的顏色`}
                     >
-                      <Palette className="w-4 h-4" style={{ color: job.color }} />
+                      <span className="w-4 h-4 rounded-full" style={{ backgroundColor: job.color }} />
                     </button>
-                    <button
-                      onClick={() => handleDeleteJob(job.id)}
-                      className="p-2.5 bg-white border border-red-100 text-red-400 hover:bg-red-50 hover:text-red-500 rounded-xl transition-all"
-                      title="刪除項目"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+
+                    <div>
+                      <label htmlFor={`job-name-${job.id}`} className="field-label">項目名稱</label>
+                      <input
+                        id={`job-name-${job.id}`}
+                        type="text"
+                        value={job.name}
+                        onChange={(e) => handleUpdateJob(job.id, { name: e.target.value })}
+                        className="field"
+                      />
+                    </div>
+
+                    <div className="col-span-2 sm:col-span-1 grid grid-cols-[1fr_1fr_auto] sm:contents gap-3">
+                      <div>
+                        <label htmlFor={`job-type-${job.id}`} className="field-label">計算方式</label>
+                        <Select
+                          id={`job-type-${job.id}`}
+                          value={job.calcType}
+                          options={[
+                            { value: 'HOURLY', label: '時薪制' },
+                            { value: 'PIECE', label: '計件制' },
+                            { value: 'FIXED', label: '次數制' },
+                          ]}
+                          onChange={(v) => handleUpdateJob(job.id, { calcType: v as JobType['calcType'] })}
+                        />
+                      </div>
+
+                      <div>
+                        <label htmlFor={`job-price-${job.id}`} className="field-label">單價</label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[14px] text-muted">NT$</span>
+                          <input
+                            id={`job-price-${job.id}`}
+                            type="number"
+                            inputMode="decimal"
+                            value={job.unitPrice}
+                            onChange={(e) => handleUpdateJob(job.id, { unitPrice: Number(e.target.value) })}
+                            className="field num pl-10 text-right"
+                          />
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => handleDeleteJob(job.id)}
+                        className="icon-btn w-11 h-11 text-muted hover:text-danger hover:bg-danger-soft self-end ml-2"
+                        title="刪除項目"
+                        aria-label={`刪除 ${job.name}`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </div>
-            ))}
+                </li>
+              ))}
+            </ul>
 
             <button
               onClick={handleAddJob}
-              className="w-full py-4 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 font-bold hover:border-emerald-300 hover:text-emerald-500 hover:bg-emerald-50/30 transition-all flex items-center justify-center gap-2"
+              className="btn-ghost w-full h-11 my-3 border border-dashed border-line-strong text-muted hover:text-ink"
             >
-              <Plus className="w-5 h-5" /> 新增工作項目
+              <Plus className="w-4 h-4" /> 新增工作項目
             </button>
           </div>
 
-          <div className="p-6 bg-slate-50 border-t border-slate-100 flex gap-3">
-            <button
-              onClick={onClose}
-              className="flex-1 py-4 bg-white border border-slate-200 text-slate-600 font-bold rounded-2xl hover:bg-slate-50 transition-all"
-            >
-              取消
-            </button>
-            <button
-              onClick={handleSave}
-              className="flex-[2] flex items-center justify-center gap-2 py-4 bg-emerald-600 text-white font-bold rounded-2xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200"
-            >
-              <Save className="w-5 h-5" /> 儲存所有變更
+          <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-line">
+            <button onClick={onClose} className="btn-ghost">取消</button>
+            <button onClick={handleSave} className="btn-primary h-10 px-5">
+              <Save className="w-4 h-4" /> 儲存所有變更
             </button>
           </div>
         </motion.div>

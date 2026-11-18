@@ -28,45 +28,55 @@ export const UnlockGate: React.FC<UnlockGateProps> = ({ onSubmit }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden">
-        <div className="p-6 border-b border-slate-100 flex items-center gap-3 bg-slate-50/50">
-          <div className="bg-emerald-600 p-2.5 rounded-2xl shadow-lg shadow-emerald-200">
-            <Lock className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h3 className="text-lg font-black text-slate-900">需要密鑰</h3>
-            <p className="text-xs text-slate-400 font-medium">請輸入密鑰以解鎖系統</p>
-          </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ground">
+      <div className="w-full max-w-sm">
+        <div className="flex items-center gap-2 mb-6">
+          <span aria-hidden className="grid place-items-center w-7 h-7 rounded-[6px] bg-ink text-white text-[15px] font-semibold">工</span>
+          <span className="text-[17px] font-semibold text-ink">個人工資管理系統</span>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div className="relative">
-            <KeyRound className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
-            <input
-              type="password"
-              value={secret}
-              onChange={(e) => setSecret(e.target.value)}
-              placeholder="貼上密鑰"
-              autoFocus
-              className="w-full pl-11 pr-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm font-medium focus:outline-none focus:border-emerald-400 transition-colors"
-            />
+        <div className="bg-surface border border-line rounded-[var(--radius-sheet)]">
+          <div className="px-5 pt-5 pb-4 border-b border-line flex items-start gap-3">
+            <Lock className="w-4 h-4 text-muted mt-1" />
+            <div>
+              <h3 className="text-[19px] font-semibold text-ink">需要密鑰</h3>
+              <p className="text-[15px] text-muted mt-0.5">請輸入密鑰以解鎖系統</p>
+            </div>
           </div>
 
-          {error && (
-            <div className="feedback-banner-strong error">
-              {error}
+          <form onSubmit={handleSubmit} className="px-5 py-5 space-y-4">
+            <div>
+              <label htmlFor="unlock-secret" className="field-label">密鑰</label>
+              <div className="relative">
+                <KeyRound className="w-4 h-4 text-faint absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  id="unlock-secret"
+                  type="password"
+                  value={secret}
+                  onChange={(e) => setSecret(e.target.value)}
+                  placeholder="貼上密鑰"
+                  autoFocus
+                  aria-invalid={Boolean(error)}
+                  className="field pl-9"
+                />
+              </div>
             </div>
-          )}
 
-          <button
-            type="submit"
-            disabled={!secret.trim() || isSubmitting}
-            className="w-full py-3 font-bold rounded-2xl transition-all shadow-lg bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-100 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSubmitting ? '驗證中...' : '解鎖'}
-          </button>
-        </form>
+            {error && (
+              <div className="feedback-banner-strong error" role="alert">
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={!secret.trim() || isSubmitting}
+              className="btn-primary w-full h-11"
+            >
+              {isSubmitting ? '驗證中…' : '解鎖'}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

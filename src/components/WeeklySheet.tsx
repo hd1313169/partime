@@ -1,9 +1,9 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { JobType, WorkLog } from '../types';
 import { format, eachDayOfInterval, startOfWeek, endOfWeek } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
-import { FileText, Plus, Wallet } from 'lucide-react';
+import { FileText, Plus } from 'lucide-react';
 
 interface WeeklySheetProps {
   logs: WorkLog[];
@@ -84,213 +84,251 @@ export const WeeklySheet: React.FC<WeeklySheetProps> = ({
     return sum + calculateDailyTotal(format(day, 'yyyy-MM-dd'));
   }, 0);
 
+  const jobTotals = jobs
+    .map(job => ({ job, total: calculateJobWeeklyTotal(job.id) }))
+    .filter(entry => entry.total > 0);
+
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || window.innerWidth >= 1024) return;
+    const el = document.getElementById(`day-${todayStr}`);
+    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 64 });
+  }, [todayStr, days[0]?.getTime(), jobs.length]);
+
+  const activate = (e: React.KeyboardEvent, fn: () => void) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      fn();
+    }
+  };
+
   return (
     <div className="space-y-6">
-      {/* Mobile View: Card List */}
-      <div className="lg:hidden space-y-4">
+      {/* Week summary: total and where it came from */}
+      <section aria-label="本週摘要" className="border-y border-line py-4 sm:py-5">
+        <div className="flex items-baseline justify-between gap-4">
+          <span className="text-[15px] text-muted">本週總計</span>
+          <span className="num text-[28px] sm:text-[32px] font-semibold tracking-[-0.02em] text-ink leading-none">
+            <span className="text-[17px] font-medium text-muted mr-1">NT$</span>
+            {grandTotal.toLocaleString()}
+          </span>
+        </div>
+        {grandTotal > 0 ? (
+          <>
+            <div className="mt-3.5 flex h-2 w-full overflow-hidden rounded-full bg-sunken gap-px" aria-hidden>
+              {jobTotals.map(({ job, total }) => (
+                <div key={job.id} style={{ width: `${(total / grandTotal) * 100}%`, backgroundColor: job.color }} />
+              ))}
+            </div>
+            <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5">
+              {jobTotals.map(({ job, total }) => (
+                <li key={job.id} className="flex items-center gap-1.5 text-[15px]">
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: job.color }} />
+                  <span className="text-ink-2">{job.name}</span>
+                  <span className="num text-muted">{total.toLocaleString()}</span>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : (
+          <p className="mt-2 text-[15px] text-muted">這週還沒有紀錄。點下方任一項目開始記錄。</p>
+        )}
+      </section>
+
+      {/* Mobile: day groups */}
+      <div className="lg:hidden space-y-5">
         {days.map(day => {
           const dateStr = format(day, 'yyyy-MM-dd');
           const dailyTotal = calculateDailyTotal(dateStr);
-          
+          const isToday = dateStr === todayStr;
+
           return (
-            <div key={dateStr} className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-              <div className="mobile-day-card-header p-4 flex items-center justify-between">
-                <div>
-                  <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    {format(day, 'EEEE', { locale: zhTW })}
-                  </div>
-                  <div className="text-lg font-black text-slate-900">
+            <section key={dateStr} id={`day-${dateStr}`} aria-label={format(day, 'MM/dd EEEE', { locale: zhTW })}>
+              <div className="mobile-day-card-header flex items-center justify-between h-9 border-b border-line">
+                <div className="flex items-baseline gap-2">
+                  <span className={`num text-[17px] font-semibold ${isToday ? 'text-accent' : 'text-ink'}`}>
                     {format(day, 'MM/dd')}
-                  </div>
+                  </span>
+                  <span className="text-[15px] text-muted">{format(day, 'EEEE', { locale: zhTW })}</span>
+                  {isToday && <span className="text-[14px] font-medium text-accent">今天</span>}
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="text-right">
-                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">當日合計</div>
-                    <div className="text-xl font-black text-emerald-600">${dailyTotal.toLocaleString()}</div>
-                  </div>
+                <div className="flex items-center gap-1">
+                  <span className={`num text-[16px] font-medium ${dailyTotal > 0 ? 'text-ink' : 'text-faint'}`}>
+                    {dailyTotal > 0 ? `NT$ ${dailyTotal.toLocaleString()}` : '—'}
+                  </span>
                   {dailyTotal > 0 && (
-                    <button 
+                    <button
                       onClick={() => generateReportText(dateStr)}
-                      className="button-icon-strong p-3"
+                      className="icon-btn -mr-1.5"
                       title="生成回報文字"
+                      aria-label="生成回報文字"
                     >
-                      <FileText className="w-5 h-5" />
+                      <FileText className="w-4 h-4" />
                     </button>
                   )}
                 </div>
               </div>
-              
-              <div className="divide-y divide-slate-50">
+
+              <ul className="divide-y divide-line/70">
                 {jobs.map(job => {
                   const log = getLogForJobAndDate(job.id, dateStr);
                   const currentPrice = weeklyPrices[job.id];
-                  
+
                   return (
-                    <div 
-                      key={job.id} 
-                      className="p-4 flex items-center justify-between active:bg-slate-50 transition-colors cursor-pointer"
-                      onClick={() => onCellClick(job, dateStr, log)}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: job.color }}></div>
-                        <div>
-                          <p className="font-bold text-slate-900 text-sm">{job.name}</p>
-                          <div className="flex items-center gap-1 mt-0.5" onClick={(e) => e.stopPropagation()}>
-                            <span className="text-[10px] text-slate-400 font-bold uppercase">單價: $</span>
-                            <input 
-                              type="number"
-                              value={currentPrice}
-                              onChange={(e) => onUpdateWeeklyPrice(job.id, Number(e.target.value))}
-                              className="w-14 bg-slate-100 border-none rounded px-1 py-0.5 text-[10px] font-black text-slate-600 outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500 transition-all"
-                            />
+                    <li key={job.id}>
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        className="flex items-center justify-between gap-3 min-h-[52px] py-2 -mx-2 px-2 rounded-[var(--radius-ctl)] cursor-pointer active:bg-sunken hover:bg-sunken/60 transition-colors"
+                        onClick={() => onCellClick(job, dateStr, log)}
+                        onKeyDown={(e) => activate(e, () => onCellClick(job, dateStr, log))}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: job.color }} />
+                          <div className="min-w-0">
+                            <p className="text-[17px] text-ink truncate">{job.name}</p>
+                            <label
+                              className="flex items-center gap-0.5 text-[14px] text-muted"
+                              onClick={(e) => e.stopPropagation()}
+                              onKeyDown={(e) => e.stopPropagation()}
+                            >
+                              單價
+                              <input
+                                type="number"
+                                inputMode="decimal"
+                                value={currentPrice}
+                                onChange={(e) => onUpdateWeeklyPrice(job.id, Number(e.target.value))}
+                                className="price-input w-16 h-10 -my-2 text-[15px] text-left border-b-line-strong rounded-none border-x-0 border-t-0"
+                                aria-label={`${job.name} 本週單價`}
+                              />
+                            </label>
                           </div>
                         </div>
+
+                        {log ? (
+                          <div className="text-right shrink-0">
+                            <div className="num text-[17px] font-medium text-ink">{log.amount.toLocaleString()}</div>
+                                                      </div>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[15px] text-faint shrink-0">
+                            <Plus className="w-3.5 h-3.5 text-line-strong" /> 記錄
+                          </span>
+                        )}
                       </div>
-                      
-                      {log ? (
-                        <div className="text-right">
-                          <div className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md inline-block mb-1">
-                            {job.calcType === 'HOURLY' ? `${log.startTime}-${log.endTime}` : `數量: ${log.quantity}`}
-                          </div>
-                          <div className="text-base font-black text-slate-900">${log.amount.toLocaleString()}</div>
-                        </div>
-                      ) : (
-                        <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center">
-                          <Plus className="w-4 h-4 text-slate-300" />
-                        </div>
-                      )}
-                    </div>
+                    </li>
                   );
                 })}
-              </div>
-            </div>
+              </ul>
+            </section>
           );
         })}
-        
-        {/* Mobile Grand Total */}
-        <div className="bg-slate-900 rounded-3xl p-6 text-white shadow-xl">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-1">全週總計</p>
-              <p className="text-3xl font-black text-emerald-400">NT$ {grandTotal.toLocaleString()}</p>
-            </div>
-            <div className="bg-white/10 p-4 rounded-2xl">
-              <Wallet className="w-8 h-8 text-emerald-400" />
-            </div>
-          </div>
-        </div>
       </div>
 
-      {/* Desktop View: Table */}
-      <div className="hidden lg:block bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
+      {/* Desktop: table */}
+      <div className="hidden lg:block bg-surface border border-line rounded-[var(--radius-sheet)] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[1000px]">
             <thead>
               <tr className="desktop-weekly-head">
-                <th className="p-6 text-xs font-black text-slate-400 uppercase tracking-[0.2em] sticky left-0 z-10 border-r border-slate-100 whitespace-nowrap">工作項目</th>
-                <th className="p-6 text-xs font-black text-slate-400 uppercase tracking-[0.2em] whitespace-nowrap">本週單價</th>
-                {days.map(day => (
-                  <th key={day.toString()} className="p-4 text-center min-w-[120px]">
-                    <div className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">
-                      {format(day, 'EEEE', { locale: zhTW })}
-                    </div>
-                    <div className="text-lg font-black text-slate-900">
-                      {format(day, 'MM/dd')}
-                    </div>
-                  </th>
-                ))}
-                <th className="p-6 text-xs font-black text-slate-400 uppercase tracking-[0.2em] text-right sticky right-0 z-10 border-l border-slate-100">週合計</th>
+                <th scope="col" className="desktop-weekly-sticky-lead sticky left-0 z-10 px-4 py-3 text-[14px] font-medium text-muted border-r border-line whitespace-nowrap">工作項目</th>
+                <th scope="col" className="px-3 py-3 text-[14px] font-medium text-muted whitespace-nowrap text-right">本週單價</th>
+                {days.map(day => {
+                  const dateStr = format(day, 'yyyy-MM-dd');
+                  const isToday = dateStr === todayStr;
+                  return (
+                    <th scope="col" key={dateStr} className={`px-2 py-3 text-center min-w-[112px] ${isToday ? 'bg-accent-soft/60' : ''}`}>
+                      <div className={`text-[14px] font-medium ${isToday ? 'text-accent' : 'text-muted'}`}>
+                        {format(day, 'EEEE', { locale: zhTW })}{isToday && ' · 今天'}
+                      </div>
+                      <div className={`num text-[17px] font-semibold ${isToday ? 'text-accent' : 'text-ink'}`}>{format(day, 'MM/dd')}</div>
+                    </th>
+                  );
+                })}
+                <th scope="col" className="desktop-weekly-sticky-total sticky right-0 z-10 px-4 py-3 text-[14px] font-medium text-muted text-right border-l border-line">週合計</th>
               </tr>
             </thead>
             <tbody>
               {jobs.map(job => (
-                <tr key={job.id} className="border-b border-slate-50 group transition-all">
-                  <td className="desktop-weekly-sticky-lead p-6 font-bold text-slate-900 sticky left-0 z-10 border-r border-slate-50 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.05)] whitespace-nowrap">
-                    <div className="flex items-center gap-3">
-                      <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: job.color }}></div>
+                <tr key={job.id} className="border-b border-line/70">
+                  <th scope="row" className="desktop-weekly-sticky-lead sticky left-0 z-10 px-4 py-2 text-[16px] font-medium text-ink border-r border-line whitespace-nowrap">
+                    <div className="flex items-center gap-2.5">
+                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: job.color }} />
                       {job.name}
                     </div>
-                  </td>
-                  <td className="desktop-weekly-sticky-lead p-6">
-                    <div className="flex items-center gap-2 group/price">
-                      <span className="text-[10px] font-black text-slate-300 uppercase">NT$</span>
-                      <input 
+                  </th>
+                  <td className="px-3 py-2 text-right">
+                    <div className="inline-flex items-center justify-end gap-0.5 text-[14px] text-muted">
+                      NT$
+                      <input
                         type="number"
                         value={weeklyPrices[job.id]}
                         onChange={(e) => onUpdateWeeklyPrice(job.id, Number(e.target.value))}
-                        className="w-16 bg-slate-50 border-2 border-transparent focus:border-emerald-500 focus:bg-white rounded-xl px-2 py-1 text-sm font-black text-slate-700 transition-all outline-none"
+                        className="price-input"
+                        aria-label={`${job.name} 本週單價`}
                       />
                     </div>
                   </td>
                   {days.map(day => {
                     const dateStr = format(day, 'yyyy-MM-dd');
                     const log = getLogForJobAndDate(job.id, dateStr);
-                    
+                    const isToday = dateStr === todayStr;
+
                     return (
-                      <td 
-                        key={dateStr} 
-                        className="p-2 text-center cursor-pointer group/cell"
-                        onClick={() => onCellClick(job, dateStr, log)}
-                      >
-                        <div className={`
-                          min-h-[70px] rounded-2xl flex flex-col items-center justify-center transition-all border-2
-                          ${log 
-                            ? 'bg-emerald-50/50 border-emerald-100 group-hover/cell:bg-emerald-100 group-hover/cell:border-emerald-200' 
-                            : 'bg-slate-50/30 border-transparent hover:bg-slate-50 hover:border-slate-200'
-                          }
-                        `}>
+                      <td key={dateStr} className={`p-1 text-center ${isToday ? 'bg-accent-soft/40' : ''}`}>
+                        <button
+                          onClick={() => onCellClick(job, dateStr, log)}
+                          className="group/cell w-full min-h-[56px] rounded-[var(--radius-ctl)] flex flex-col items-center justify-center hover:bg-sunken transition-colors"
+                          aria-label={`${format(day, 'MM/dd')} ${job.name}${log ? ` ${log.amount} 元，編輯` : '，新增紀錄'}`}
+                        >
                           {log ? (
-                            <div className="p-2">
-                              <div className="text-[11px] font-bold text-emerald-700 uppercase tracking-tight mb-1 bg-emerald-100/50 px-1.5 py-0.5 rounded-md">
-                                {job.calcType === 'HOURLY' ? `${log.startTime}-${log.endTime}` : `數量: ${log.quantity}`}
-                              </div>
-                              <div className="text-lg font-black text-emerald-800">
-                                ${log.amount.toLocaleString()}
-                              </div>
-                            </div>
+                            <>
+                              <span className="num text-[17px] font-medium text-ink">{log.amount.toLocaleString()}</span>
+                                                          </>
                           ) : (
-                            <Plus className="w-5 h-5 text-slate-200 opacity-0 group-hover/cell:opacity-100 transition-opacity" />
+                            <Plus className="w-4 h-4 text-line-strong group-hover/cell:text-accent transition-colors" />
                           )}
-                        </div>
+                        </button>
                       </td>
                     );
                   })}
-                  <td className="desktop-weekly-sticky-total p-6 text-right font-black text-slate-900 sticky right-0 z-10 border-l border-slate-50 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.05)]">
-                    <span className="text-xs text-slate-300 mr-2">NT$</span>
-                    {calculateJobWeeklyTotal(job.id).toLocaleString()}
+                  <td className="desktop-weekly-sticky-total sticky right-0 z-10 px-4 py-2 text-right border-l border-line">
+                    <span className="num text-[16px] font-medium text-ink">{calculateJobWeeklyTotal(job.id).toLocaleString()}</span>
                   </td>
                 </tr>
               ))}
             </tbody>
             <tfoot>
-              <tr className="bg-slate-900 text-white">
-                <td colSpan={2} className="p-6 font-black text-xs uppercase tracking-[0.3em] text-slate-400">每日合計</td>
+              <tr className="bg-sunken/70 border-t border-line">
+                <th scope="row" colSpan={2} className="px-4 py-3 text-[14px] font-medium text-muted">每日合計</th>
                 {days.map(day => {
                   const dateStr = format(day, 'yyyy-MM-dd');
                   const total = calculateDailyTotal(dateStr);
                   return (
-                    <td key={dateStr} className="p-4 text-center">
-                      <div className="flex flex-col items-center gap-2">
-                        <div className="text-lg font-black">${total.toLocaleString()}</div>
+                    <td key={dateStr} className="px-2 py-2 text-center">
+                      <div className="flex items-center justify-center gap-0.5">
+                        <span className={`num text-[16px] font-semibold ${total > 0 ? 'text-ink' : 'text-faint'}`}>
+                          {total > 0 ? total.toLocaleString() : '—'}
+                        </span>
                         {total > 0 && (
-                          <button 
+                          <button
                             onClick={(e) => {
                               e.stopPropagation();
                               generateReportText(dateStr);
                             }}
-                            className="p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-all group/btn"
+                            className="icon-btn w-7 h-7"
                             title="生成回報文字"
+                            aria-label="生成回報文字"
                           >
-                            <FileText className="w-4 h-4 text-white/60 group-hover/btn:text-white" />
+                            <FileText className="w-3.5 h-3.5" />
                           </button>
                         )}
                       </div>
                     </td>
                   );
                 })}
-                <td className="desktop-weekly-sticky-total p-6 text-right font-black text-2xl bg-emerald-600 shadow-[-10px_0_20px_-5px_rgba(16,185,129,0.3)]">
-                  <div className="text-[10px] font-black text-emerald-200 uppercase tracking-[0.2em] mb-1">全週總計</div>
-                  NT$ {grandTotal.toLocaleString()}
+                <td className="desktop-weekly-sticky-total sticky right-0 z-10 px-4 py-3 text-right border-l border-line !bg-sunken">
+                  <span className="num text-[16px] font-semibold text-ink">NT$ {grandTotal.toLocaleString()}</span>
                 </td>
               </tr>
             </tfoot>

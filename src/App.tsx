@@ -16,7 +16,7 @@ import { DemoFooter } from './components/DemoFooter';
 import { getStoredAppSecret, isUnauthorizedError, mapApiError, setStoredAppSecret } from './services/apiClient';
 import { salaryApi } from './services/salaryApi';
 import { isDemoMode } from './services/demoMode';
-import { Wallet, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, RotateCcw, Settings2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, RotateCcw, Settings2 } from 'lucide-react';
 import { addWeeks, subWeeks, format, startOfWeek, addMonths, subMonths, addYears, subYears, isSameWeek, addDays } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
 
@@ -212,128 +212,92 @@ export default function App() {
   const isCurrentWeek = isSameWeek(currentDate, new Date(), { weekStartsOn: 1 });
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-emerald-100 selection:text-emerald-900">
+    <div className="min-h-screen bg-ground text-ink font-sans">
       {!isUnlocked && <UnlockGate onSubmit={handleUnlockSubmit} />}
 
       <header className="app-topbar">
-        <div className="app-shell-wide px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="bg-emerald-600 p-2.5 rounded-2xl shadow-lg shadow-emerald-200 rotate-3">
-              <Wallet className="w-6 h-6 text-white" />
+        <div className="app-shell-wide px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 sm:gap-5 min-w-0">
+            <div className="flex items-center gap-2 min-w-0">
+              <h1 className="hidden min-[400px]:block text-[17px] font-semibold tracking-[-0.01em] text-ink truncate">個人工資管理系統</h1>
             </div>
-            <div className="hidden sm:block">
-              <h1 className="text-xl font-black tracking-tight text-slate-900">個人工資管理系統</h1>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Personal Salary Tracker</p>
-            </div>
-            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
-              <button
-                onClick={() => setView('weekly')}
-                className={`px-3 py-1.5 text-xs font-black rounded-lg transition-all ${view === 'weekly' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-              >
-                週報
-              </button>
-              <button
-                onClick={() => setView('monthly')}
-                className={`px-3 py-1.5 text-xs font-black rounded-lg transition-all ${view === 'monthly' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-              >
-                月報
-              </button>
+            <div className="segmented" role="group" aria-label="切換報表">
+              <button aria-pressed={view === 'weekly'} onClick={() => setView('weekly')}>週報</button>
+              <button aria-pressed={view === 'monthly'} onClick={() => setView('monthly')}>月報</button>
             </div>
           </div>
-          
-          <div className="flex items-center gap-3">
-            {view === 'weekly' && !isCurrentWeek && (
-              <button 
-                onClick={jumpToToday}
-                className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 font-bold rounded-2xl hover:bg-emerald-100 transition-all border border-emerald-100 whitespace-nowrap"
-              >
-                <RotateCcw className="w-4 h-4" />
-                回到本週
-              </button>
-            )}
+
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <DemoResetButton />
             <button
               onClick={() => setJobManagementOpen(true)}
-              className="button-secondary-strong group"
+              className="button-secondary-strong"
+              title="工作項目管理"
             >
-              <Settings2 className="w-4 h-4 text-slate-400 group-hover:text-emerald-600 transition-colors" />
-              <span className="hidden sm:inline">工作項目管理</span>
+              <Settings2 className="w-4 h-4 text-muted" />
+              <span className="hidden sm:inline">工作項目</span>
             </button>
           </div>
         </div>
       </header>
 
-      <main className="app-shell-wide px-4 sm:px-6 lg:px-8 py-10">
-        <div className="space-y-8">
+      <main className="app-shell-wide px-4 sm:px-6 lg:px-8 pt-5 sm:pt-8 pb-16">
+        <div className="space-y-5 sm:space-y-6">
           {isLoading && (
-            <div className="feedback-banner-strong loading">
-              正在載入資料...
-            </div>
+            <div className="feedback-banner-strong loading">正在載入資料…</div>
           )}
           {apiError && (
-            <div className="feedback-banner-strong error">
-              {apiError}
-            </div>
+            <div className="feedback-banner-strong error" role="alert">{apiError}</div>
           )}
+
           {view === 'weekly' && (
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            <div>
-              <h2 className="text-xl sm:text-3xl font-black text-slate-900 tracking-tight">薪資週報表</h2>
-              <p className="text-xs sm:text-sm text-slate-400 font-medium mt-1">點擊儲存格即可新增或編輯工作紀錄，單價欄位可手動調整本週工資</p>
-            </div>
-            
-            <div className="flex flex-wrap items-center justify-center lg:justify-end gap-2 sm:gap-3">
-              {/* Year Nav */}
-              <div className="flex items-center gap-1 bg-white p-1 rounded-xl shadow-sm border border-slate-200">
-                <button onClick={prevYear} className="p-1.5 hover:bg-slate-50 rounded-lg text-slate-400 hover:text-emerald-600 transition-all" title="上一年">
-                  <ChevronsLeft className="w-4 h-4" />
-                </button>
-                <span className="text-[10px] font-black px-1 text-slate-500 uppercase tracking-widest">年</span>
-                <button onClick={nextYear} className="p-1.5 hover:bg-slate-50 rounded-lg text-slate-400 hover:text-emerald-600 transition-all" title="下一年">
-                  <ChevronsRight className="w-4 h-4" />
-                </button>
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+              <div>
+                <h2 className="text-[22px] sm:text-[26px] font-semibold tracking-[-0.02em] text-ink">薪資週報表</h2>
+                <p className="text-[15px] text-muted mt-0.5">點擊項目即可記錄；單價可針對本週調整</p>
               </div>
 
-              {/* Month Nav */}
-              <div className="flex items-center gap-1 bg-white p-1 rounded-xl shadow-sm border border-slate-200">
-                <button onClick={prevMonth} className="p-1.5 hover:bg-slate-50 rounded-lg text-slate-400 hover:text-emerald-600 transition-all" title="上一月">
-                  <ChevronLeft className="w-4 h-4" />
+              <nav className="flex items-center gap-1" aria-label="切換週次">
+                <button onClick={prevYear} className="btn-ghost h-8 px-2 text-[14px] text-muted hidden sm:inline-flex" title="上一年" aria-label="上一年">
+                  <ChevronLeft className="w-3.5 h-3.5" />年
                 </button>
-                <span className="text-[10px] font-black px-1 text-slate-500 uppercase tracking-widest">月</span>
-                <button onClick={nextMonth} className="p-1.5 hover:bg-slate-50 rounded-lg text-slate-400 hover:text-emerald-600 transition-all" title="下一月">
-                  <ChevronRight className="w-4 h-4" />
+                <button onClick={prevMonth} className="btn-ghost h-8 px-2 text-[14px] text-muted hidden sm:inline-flex" title="上一月" aria-label="上一月">
+                  <ChevronLeft className="w-3.5 h-3.5" />月
                 </button>
-              </div>
-
-              {/* Week Nav */}
-              <div className="flex items-center gap-1 bg-white p-1.5 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 w-full sm:w-auto justify-between sm:justify-start">
-                <button 
-                  onClick={prevWeek}
-                  className="p-2 hover:bg-slate-50 rounded-xl transition-colors text-slate-400 hover:text-emerald-600"
-                  title="上一週"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
-                <div className="px-3 py-1.5 bg-slate-50 rounded-xl text-xs font-black text-slate-700 min-w-[180px] text-center">
-                  {format(weekStart, 'yyyy/MM/dd')} - {format(addDays(weekStart, 6), 'yyyy/MM/dd')}
+                <div className="flex items-center flex-1 sm:flex-none h-9 border border-line bg-surface rounded-[var(--radius-ctl)]">
+                  <button onClick={prevWeek} className="h-full px-2.5 text-muted hover:text-ink border-r border-line" title="上一週" aria-label="上一週">
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <span className="num flex-1 sm:flex-none px-3 text-[15px] font-medium text-ink text-center sm:min-w-[188px]">
+                    {format(weekStart, 'yyyy/MM/dd')} – {format(addDays(weekStart, 6), 'MM/dd')}
+                  </span>
+                  <button onClick={nextWeek} className="h-full px-2.5 text-muted hover:text-ink border-l border-line" title="下一週" aria-label="下一週">
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
                 </div>
-                <button 
-                  onClick={nextWeek}
-                  className="p-2 hover:bg-slate-50 rounded-xl transition-colors text-slate-400 hover:text-emerald-600"
-                  title="下一週"
-                >
-                  <ChevronRight className="w-5 h-5" />
+                <button onClick={nextMonth} className="btn-ghost h-8 px-2 text-[14px] text-muted hidden sm:inline-flex" title="下一月" aria-label="下一月">
+                  月<ChevronRight className="w-3.5 h-3.5" />
                 </button>
-              </div>
+                <button onClick={nextYear} className="btn-ghost h-8 px-2 text-[14px] text-muted hidden sm:inline-flex" title="下一年" aria-label="下一年">
+                  年<ChevronRight className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={jumpToToday}
+                  disabled={isCurrentWeek}
+                  className="btn-ghost h-9 px-2.5 text-accent disabled:text-faint disabled:opacity-100"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  本週
+                </button>
+              </nav>
             </div>
-          </div>
           )}
-          
+
           {view === 'weekly' ? (
-            <WeeklySheet 
-              logs={logs} 
-              jobs={jobs} 
-              currentDate={currentDate} 
+            <WeeklySheet
+              logs={logs}
+              jobs={jobs}
+              currentDate={currentDate}
               weeklyPrices={currentWeekPrices}
               onUpdateWeeklyPrice={handleUpdateWeeklyPrice}
               onCellClick={(job, date, log) => setLogModal({ isOpen: true, job, date, log })}
@@ -345,7 +309,6 @@ export default function App() {
         </div>
       </main>
 
-      {/* Modals */}
       {logModal.job && logModal.date && (
         <LogModal
           isOpen={logModal.isOpen}
@@ -377,15 +340,6 @@ export default function App() {
           void handleUpdateJobs(updatedJobs);
         }}
       />
-
-      <footer className="app-shell-wide px-4 sm:px-6 lg:px-8 py-16 text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-slate-200 shadow-sm">
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-          <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">
-            系統運作正常 · 2026 工資計算表
-          </p>
-        </div>
-      </footer>
 
       <DemoFooter />
     </div>

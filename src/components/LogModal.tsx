@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { JobType, WorkLog } from '../types';
 import { calculateLogAmount } from '../utils/salary';
-import { X, Trash2, Save, Clock, Hash } from 'lucide-react';
+import { X, Trash2, Save, Minus, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface LogModalProps {
@@ -60,100 +60,149 @@ export const LogModal: React.FC<LogModalProps> = ({
     onClose();
   };
 
+  const amount = job.calcType === 'HOURLY'
+    ? calculateLogAmount(job, unitPrice, startTime, endTime, quantity)
+    : calculateLogAmount(job, unitPrice, undefined, undefined, quantity);
+
+  const minutes = (() => {
+    const [sh, sm] = startTime.split(':').map(Number);
+    const [eh, em] = endTime.split(':').map(Number);
+    return (eh * 60 + em) - (sh * 60 + sm);
+  })();
+  const hoursLabel = (minutes / 60).toFixed(2).replace(/\.?0+$/, '');
+  const invalidRange = job.calcType === 'HOURLY' && minutes <= 0;
+
+  const unitLabel = job.calcType === 'HOURLY' ? '小時' : job.calcType === 'PIECE' ? '件' : '次';
+  const typeLabel = job.calcType === 'HOURLY' ? '時薪制' : job.calcType === 'PIECE' ? '計件制' : '次數制';
+
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+      <div className="scrim" onClick={onClose}>
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="log-sheet-title"
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 24 }}
+          transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+          className="sheet sm:max-w-md"
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
         >
-          <div className="p-6 border-b border-slate-200 flex items-center justify-between bg-slate-50">
-            <div>
-              <h3 className="text-xl font-bold text-slate-900">{existingLog ? '編輯紀錄' : '新增紀錄'}</h3>
-              <p className="text-sm text-slate-600 font-medium">{date} · {job.name}</p>
+          <div className="flex items-start justify-between gap-3 px-5 pt-5 pb-4 border-b border-line">
+            <div className="min-w-0">
+              <h3 id="log-sheet-title" className="text-[19px] font-semibold text-ink">{existingLog ? '編輯紀錄' : '新增紀錄'}</h3>
+              <p className="mt-1 flex items-center gap-1.5 text-[15px] text-muted">
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: job.color }} />
+                <span className="text-ink-2">{job.name}</span>
+                <span aria-hidden>·</span>
+                <span className="num">{date}</span>
+                <span aria-hidden>·</span>
+                <span>{typeLabel}</span>
+              </p>
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full transition-colors">
-              <X className="w-5 h-5 text-slate-600" />
+            <button onClick={onClose} className="icon-btn -mr-1.5" aria-label="關閉">
+              <X className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="p-8 space-y-6">
+          <div className="px-5 py-5 space-y-5">
             {job.calcType === 'HOURLY' ? (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5" /> 開始時間
-                    </label>
-                    <input
-                      type="time"
-                      value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
-                      className="w-full bg-white border-2 border-slate-200 focus:border-emerald-500 focus:bg-white rounded-2xl px-4 py-3 text-lg font-medium text-slate-900 transition-all outline-none"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5" /> 結束時間
-                    </label>
-                    <input
-                      type="time"
-                      value={endTime}
-                      onChange={(e) => setEndTime(e.target.value)}
-                      className="w-full bg-white border-2 border-slate-200 focus:border-emerald-500 focus:bg-white rounded-2xl px-4 py-3 text-lg font-medium text-slate-900 transition-all outline-none"
-                    />
-                  </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="log-start" className="field-label">開始時間</label>
+                  <input
+                    id="log-start"
+                    type="time"
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                    className="field num"
+                  />
                 </div>
-                <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
-                  <p className="text-xs text-emerald-600 font-bold uppercase mb-1">預估金額</p>
-                  <p className="text-2xl font-black text-emerald-700">
-                    NT$ {calculateLogAmount(job, unitPrice, startTime, endTime, quantity).toLocaleString()}
-                  </p>
+                <div>
+                  <label htmlFor="log-end" className="field-label">結束時間</label>
+                  <input
+                    id="log-end"
+                    type="time"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                    className="field num"
+                    aria-invalid={invalidRange}
+                  />
                 </div>
               </div>
             ) : (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
-                    <Hash className="w-3.5 h-3.5" /> {job.calcType === 'PIECE' ? '數量' : '次數'}
-                  </label>
+              <div>
+                <label htmlFor="log-qty" className="field-label">{job.calcType === 'PIECE' ? '數量' : '次數'}</label>
+                <div className="flex items-stretch gap-2">
+                  <button
+                    type="button"
+                    className="button-secondary-strong h-11 w-11 px-0 text-lg"
+                    onClick={() => setQuantity(q => Math.max(0, q - 1))}
+                    aria-label="減少"
+                  ><Minus className="w-4 h-4" /></button>
                   <input
+                    id="log-qty"
                     type="number"
+                    inputMode="numeric"
                     value={quantity}
                     onChange={(e) => setQuantity(Number(e.target.value))}
-                    className="w-full bg-white border-2 border-slate-200 focus:border-emerald-500 focus:bg-white rounded-2xl px-4 py-3 text-lg font-medium text-slate-900 transition-all outline-none"
+                    className="field num text-center text-[19px] font-medium"
                   />
-                </div>
-                <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
-                  <p className="text-xs text-emerald-600 font-bold uppercase mb-1">預估金額</p>
-                  <p className="text-2xl font-black text-emerald-700">
-                    NT$ {calculateLogAmount(job, unitPrice, undefined, undefined, quantity).toLocaleString()}
-                  </p>
+                  <button
+                    type="button"
+                    className="button-secondary-strong h-11 w-11 px-0 text-lg"
+                    onClick={() => setQuantity(q => q + 1)}
+                    aria-label="增加"
+                  ><Plus className="w-4 h-4" /></button>
                 </div>
               </div>
             )}
+
+            {/* Formula line: the arithmetic is always visible */}
+            <div className="rounded-[var(--radius-ctl)] bg-sunken px-4 py-3.5" aria-live="polite">
+              <div className="num flex items-center justify-between gap-3 text-[15px] text-muted">
+                <span>
+                  {job.calcType === 'HOURLY'
+                    ? <>NT$ {unitPrice} × {invalidRange ? '—' : hoursLabel} {unitLabel}</>
+                    : <>NT$ {unitPrice} × {quantity} {unitLabel}</>}
+                </span>
+                {job.calcType === 'HOURLY' && !invalidRange && <span>無條件進位</span>}
+              </div>
+              <div className="num mt-1 flex items-baseline justify-between">
+                <span className="text-[15px] text-muted">金額</span>
+                <span className="text-[26px] font-semibold tracking-[-0.02em] text-ink leading-none">
+                  <span className="text-[16px] font-medium text-muted mr-1">NT$</span>{amount.toLocaleString()}
+                </span>
+              </div>
+              {existingLog && existingLog.unitPriceAtTime !== unitPrice && (
+                <p className="mt-2 text-[15px] text-ink-2">原紀錄單價 NT$ {existingLog.unitPriceAtTime}（NT$ {existingLog.amount.toLocaleString()}），儲存後改用本週單價 NT$ {unitPrice}。</p>
+              )}
+              {invalidRange && (
+                <p className="mt-2 text-[15px] text-danger">結束時間要晚於開始時間。</p>
+              )}
+            </div>
           </div>
 
-          <div className="p-6 bg-slate-100 border-t border-slate-200 flex gap-3">
-            {existingLog && (
+          <div className="flex items-center justify-between gap-3 px-5 py-4 border-t border-line">
+            {existingLog ? (
               <button
                 onClick={() => {
                   onDelete(existingLog.id);
                   onClose();
                 }}
-                className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-white border-2 border-red-200 text-red-600 font-bold rounded-2xl hover:bg-red-50 transition-all"
+                className="btn-danger -ml-2"
               >
-                <Trash2 className="w-5 h-5" /> 刪除
+                <Trash2 className="w-4 h-4" /> 刪除
               </button>
-            )}
-            <button
-              onClick={handleSave}
-              className="flex-[2] flex items-center justify-center gap-2 py-3.5 bg-emerald-600 text-white font-bold rounded-2xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200"
-            >
-              <Save className="w-5 h-5" /> 儲存
-            </button>
+            ) : <span />}
+            <div className="flex items-center gap-2">
+              <button onClick={onClose} className="btn-ghost">取消</button>
+              <button onClick={handleSave} disabled={invalidRange} className="btn-primary h-10 px-5">
+                <Save className="w-4 h-4" /> 儲存
+              </button>
+            </div>
           </div>
         </motion.div>
       </div>
