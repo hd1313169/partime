@@ -52,12 +52,13 @@ export const MonthlyReport: React.FC<MonthlyReportProps> = ({ logs, jobs }) => {
           <p className="text-[15px] text-muted mt-0.5">依實際工作日期統計，跨月的週會自動拆開計算</p>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <div className="flex items-center gap-1 sm:gap-1.5 w-full sm:w-auto">
           <button onClick={() => setSelectedMonth(prev => subYears(prev, 1))} className="icon-btn" title="上一年" aria-label="上一年">
             <ChevronsLeft className="w-4 h-4" />
           </button>
-          <div className="flex items-center flex-1 sm:flex-none h-9 border border-line bg-surface rounded-[var(--radius-ctl)]">
-            <button onClick={() => setSelectedMonth(prev => subMonths(prev, 1))} className="h-full px-2.5 text-muted hover:text-ink border-r border-line" title="上一月" aria-label="上一月">
+          <div className="flex items-center justify-between flex-1 min-w-0 sm:flex-none h-9 border border-line bg-surface rounded-[var(--radius-ctl)]">
+            <button onClick={() => setSelectedMonth(prev => subMonths(prev, 1))} className="h-full px-2 sm:px-2.5 text-muted hover:text-ink border-r border-line" title="上一月" aria-label="上一月">
               <ChevronLeft className="w-4 h-4" />
             </button>
             <Select
@@ -74,16 +75,17 @@ export const MonthlyReport: React.FC<MonthlyReportProps> = ({ logs, jobs }) => {
               options={monthOptions.map(m => ({ value: m, label: `${m} 月` }))}
               onChange={(m) => setSelectedMonth(new Date(year, m - 1, 1))}
             />
-            <button onClick={() => setSelectedMonth(prev => addMonths(prev, 1))} className="h-full px-2.5 text-muted hover:text-ink border-l border-line" title="下一月" aria-label="下一月">
+            <button onClick={() => setSelectedMonth(prev => addMonths(prev, 1))} className="h-full px-2 sm:px-2.5 text-muted hover:text-ink border-l border-line" title="下一月" aria-label="下一月">
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
           <button onClick={() => setSelectedMonth(prev => addYears(prev, 1))} className="icon-btn" title="下一年" aria-label="下一年">
             <ChevronsRight className="w-4 h-4" />
           </button>
+          </div>
           <button
             onClick={() => exportMonthToExcel(logs, jobs, year, month)}
-            className="button-secondary-strong ml-1"
+            className="button-secondary-strong w-full sm:w-auto sm:ml-1 justify-center"
             title="匯出 Excel"
           >
             <Download className="w-4 h-4 text-muted" />
@@ -122,35 +124,37 @@ export const MonthlyReport: React.FC<MonthlyReportProps> = ({ logs, jobs }) => {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-line">
-                  <th scope="col" className="text-left text-[14px] font-medium text-muted px-4 py-3">工作項目</th>
-                  <th scope="col" className="text-right text-[14px] font-medium text-muted px-4 py-3">時數／件數</th>
-                  <th scope="col" className="hidden sm:table-cell text-right text-[14px] font-medium text-muted px-4 py-3">佔比</th>
-                  <th scope="col" className="text-right text-[14px] font-medium text-muted px-4 py-3">工資</th>
+                  <th scope="col" className="text-left text-[14px] font-medium text-muted px-2.5 sm:px-4 py-3">工作項目</th>
+                  <th scope="col" className="text-right text-[14px] font-medium text-muted px-2.5 sm:px-4 py-3">時數／件數</th>
+                  <th scope="col" className="hidden sm:table-cell text-right text-[14px] font-medium text-muted px-2.5 sm:px-4 py-3">佔比</th>
+                  <th scope="col" className="text-right text-[14px] font-medium text-muted px-2.5 sm:px-4 py-3">工資</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line/70">
                 {report.stats.map((stat) => (
                   <tr key={stat.job.id}>
-                    <th scope="row" className="px-4 py-3 text-left font-normal">
+                    <th scope="row" className="px-2.5 sm:px-4 py-3 text-left font-normal">
                       <div className="flex items-center gap-2.5">
                         <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: stat.job.color }} />
-                        <span className="text-[16px] font-medium text-ink">{stat.job.name}</span>
-                        <span className="text-[14px] text-muted">{typeLabel(stat.job.calcType)}</span>
+                        <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2.5">
+                          <span className="text-[16px] font-medium text-ink whitespace-nowrap">{stat.job.name}</span>
+                          <span className="text-[14px] text-muted whitespace-nowrap">{typeLabel(stat.job.calcType)}</span>
+                        </div>
                       </div>
                     </th>
-                    <td className="num px-4 py-3 text-right text-[16px] text-ink-2">{qtyLabel(stat)}</td>
-                    <td className="num hidden sm:table-cell px-4 py-3 text-right text-[16px] text-muted">
+                    <td className="num px-2.5 sm:px-4 py-3 text-right text-[16px] text-ink-2 whitespace-nowrap">{qtyLabel(stat)}</td>
+                    <td className="num hidden sm:table-cell px-2.5 sm:px-4 py-3 text-right text-[16px] text-muted">
                       {report.grandTotal > 0 ? `${Math.round((stat.totalAmount / report.grandTotal) * 100)}%` : '—'}
                     </td>
-                    <td className="num px-4 py-3 text-right text-[16px] font-medium text-ink">{stat.totalAmount.toLocaleString()}</td>
+                    <td className="num px-2.5 sm:px-4 py-3 text-right text-[16px] font-medium text-ink">{stat.totalAmount.toLocaleString()}</td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
                 <tr className="border-t border-line bg-sunken/70">
-                  <th scope="row" colSpan={2} className="px-4 py-3 text-left text-[14px] font-medium text-muted">合計</th>
+                  <th scope="row" colSpan={2} className="px-2.5 sm:px-4 py-3 text-left text-[14px] font-medium text-muted">合計</th>
                   <td className="hidden sm:table-cell" />
-                  <td className="num px-4 py-3 text-right text-[17px] font-semibold text-ink">NT$ {report.grandTotal.toLocaleString()}</td>
+                  <td className="num px-2.5 sm:px-4 py-3 text-right text-[17px] font-semibold text-ink whitespace-nowrap"><span className="text-[14px] font-medium text-muted mr-1">NT$</span>{report.grandTotal.toLocaleString()}</td>
                 </tr>
               </tfoot>
             </table>

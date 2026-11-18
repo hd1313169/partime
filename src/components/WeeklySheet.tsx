@@ -170,7 +170,7 @@ export const WeeklySheet: React.FC<WeeklySheetProps> = ({
                 </div>
               </div>
 
-              <ul className="divide-y divide-line/70">
+              <ul className="divide-y divide-line">
                 {jobs.map(job => {
                   const log = getLogForJobAndDate(job.id, dateStr);
                   const currentPrice = weeklyPrices[job.id];
@@ -189,7 +189,7 @@ export const WeeklySheet: React.FC<WeeklySheetProps> = ({
                           <div className="min-w-0">
                             <p className="text-[17px] text-ink truncate">{job.name}</p>
                             <label
-                              className="flex items-center gap-0.5 text-[14px] text-muted"
+                              className="flex items-center gap-1.5 mt-0.5 text-[14px] text-muted"
                               onClick={(e) => e.stopPropagation()}
                               onKeyDown={(e) => e.stopPropagation()}
                             >
@@ -199,7 +199,7 @@ export const WeeklySheet: React.FC<WeeklySheetProps> = ({
                                 inputMode="decimal"
                                 value={currentPrice}
                                 onChange={(e) => onUpdateWeeklyPrice(job.id, Number(e.target.value))}
-                                className="price-input w-16 h-10 -my-2 text-[15px] text-left border-b-line-strong rounded-none border-x-0 border-t-0"
+                                className="price-input mobile-price-input"
                                 aria-label={`${job.name} 本週單價`}
                               />
                             </label>

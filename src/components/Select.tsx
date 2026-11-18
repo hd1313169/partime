@@ -74,7 +74,7 @@ export function Select<T extends string | number>({
   const trigger =
     variant === 'field'
       ? 'field flex items-center justify-between gap-2 text-left cursor-pointer'
-      : 'h-full flex items-center gap-1 px-2.5 text-[15px] font-medium text-ink hover:bg-sunken transition-colors cursor-pointer';
+      : 'h-full flex items-center gap-1 px-1.5 sm:px-2.5 text-[15px] font-medium text-ink hover:bg-sunken transition-colors cursor-pointer';
 
   return (
     <div ref={rootRef} className={`relative ${variant === 'inline' ? 'h-full' : ''} ${className}`}>

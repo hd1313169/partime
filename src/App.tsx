@@ -268,7 +268,7 @@ export default function App() {
                   <button onClick={prevWeek} className="h-full px-2.5 text-muted hover:text-ink border-r border-line" title="上一週" aria-label="上一週">
                     <ChevronLeft className="w-4 h-4" />
                   </button>
-                  <span className="num flex-1 sm:flex-none px-3 text-[15px] font-medium text-ink text-center sm:min-w-[188px]">
+                  <span className="num flex-1 sm:flex-none px-2 sm:px-3 text-[15px] font-medium text-ink text-center whitespace-nowrap sm:min-w-[188px]">
                     {format(weekStart, 'yyyy/MM/dd')} – {format(addDays(weekStart, 6), 'MM/dd')}
                   </span>
                   <button onClick={nextWeek} className="h-full px-2.5 text-muted hover:text-ink border-l border-line" title="下一週" aria-label="下一週">

@@ -93,8 +93,8 @@ export const LogModal: React.FC<LogModalProps> = ({
           <div className="flex items-start justify-between gap-3 px-5 pt-5 pb-4 border-b border-line">
             <div className="min-w-0">
               <h3 id="log-sheet-title" className="text-[19px] font-semibold text-ink">{existingLog ? '編輯紀錄' : '新增紀錄'}</h3>
-              <p className="mt-1 flex items-center gap-1.5 text-[15px] text-muted">
-                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: job.color }} />
+              <p className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[15px] text-muted whitespace-nowrap">
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: job.color }} />
                 <span className="text-ink-2">{job.name}</span>
                 <span aria-hidden>·</span>
                 <span className="num">{date}</span>
@@ -109,25 +109,25 @@ export const LogModal: React.FC<LogModalProps> = ({
 
           <div className="px-5 py-5 space-y-5">
             {job.calcType === 'HOURLY' ? (
-              <div className="grid grid-cols-2 gap-3">
-                <div>
+              <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-3">
+                <div className="min-w-0">
                   <label htmlFor="log-start" className="field-label">開始時間</label>
                   <input
                     id="log-start"
                     type="time"
                     value={startTime}
                     onChange={(e) => setStartTime(e.target.value)}
-                    className="field num"
+                    className="field field-time num"
                   />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <label htmlFor="log-end" className="field-label">結束時間</label>
                   <input
                     id="log-end"
                     type="time"
                     value={endTime}
                     onChange={(e) => setEndTime(e.target.value)}
-                    className="field num"
+                    className="field field-time num"
                     aria-invalid={invalidRange}
                   />
                 </div>

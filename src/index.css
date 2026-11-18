@@ -130,6 +130,24 @@
     box-shadow: 0 0 0 3px var(--color-accent-soft);
   }
 
+  /* iOS WebKit: time inputs have an intrinsic min width and native centering; let them shrink in grids. */
+  .field-time {
+    min-width: 0;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .field-time::-webkit-date-and-time-value {
+    text-align: left;
+  }
+
+  /* Mobile weekly list: a compact filled box that stays inside its row (no underline, no negative margin). */
+  /* Font stays at 16px: iOS zooms the page when focusing an input under 16px. */
+  .price-input.mobile-price-input {
+    @apply w-16 h-7 text-left bg-sunken border-transparent;
+    font-size: 16px;
+  }
+
   .field-label {
     @apply block text-[15px] font-medium text-muted mb-1.5;
   }
