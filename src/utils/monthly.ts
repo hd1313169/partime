@@ -59,3 +59,64 @@ export function computeMonthlyReport(
 
   return { stats, grandTotal };
 }
+
+export interface DailyIncome {
+  day: number;                      // 1-based day of month
+  total: number;
+  byJob: Record<string, number>;    // jobId -> amount
+}
+
+const monthPrefix = (year: number, month: number) => `${year}-${String(month).padStart(2, '0')}`;
+
+/** 當月每日收入，補齊 1 日至月底；已刪除的工作項目略過（與 computeMonthlyReport 一致）。 */
+export function computeDailyBreakdown(
+  logs: WorkLog[],
+  jobs: JobType[],
+  year: number,
+  month: number // 1-based
+): DailyIncome[] {
+  const jobIds = new Set(jobs.map(j => j.id));
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const days: DailyIncome[] = Array.from({ length: daysInMonth }, (_, i) => ({ day: i + 1, total: 0, byJob: {} }));
+  const prefix = monthPrefix(year, month);
+
+  for (const log of logs) {
+    if (!log.date.startsWith(prefix) || !jobIds.has(log.jobId)) continue;
+    const d = days[Number(log.date.slice(8, 10)) - 1];
+    if (!d) continue;
+    d.total += log.amount;
+    d.byJob[log.jobId] = (d.byJob[log.jobId] ?? 0) + log.amount;
+  }
+  return days;
+}
+
+export interface MonthTotal {
+  year: number;
+  month: number; // 1-based
+  total: number;
+}
+
+/** 以 (year, month) 為終點、往回連續 span 個月的月總工資，舊到新排序。 */
+export function computeMonthlyTrend(
+  logs: WorkLog[],
+  jobs: JobType[],
+  year: number,
+  month: number, // 1-based
+  span = 6
+): MonthTotal[] {
+  const jobIds = new Set(jobs.map(j => j.id));
+  const result: MonthTotal[] = [];
+  const index = new Map<string, MonthTotal>();
+  for (let i = span - 1; i >= 0; i--) {
+    const d = new Date(year, month - 1 - i, 1);
+    const entry = { year: d.getFullYear(), month: d.getMonth() + 1, total: 0 };
+    result.push(entry);
+    index.set(monthPrefix(entry.year, entry.month), entry);
+  }
+  for (const log of logs) {
+    if (!jobIds.has(log.jobId)) continue;
+    const entry = index.get(log.date.slice(0, 7));
+    if (entry) entry.total += log.amount;
+  }
+  return result;
+}

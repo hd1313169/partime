@@ -1,6 +1,6 @@
 // tests/client/monthly-report.test.ts
 import { describe, it, expect } from 'vitest';
-import { computeMonthlyReport } from '../../src/utils/monthly';
+import { computeMonthlyReport, computeDailyBreakdown, computeMonthlyTrend } from '../../src/utils/monthly';
 import { JobType, WorkLog } from '../../src/types';
 
 const hourlyJob: JobType = { id: 'j1', name: '早班', calcType: 'HOURLY', unitPrice: 120, color: '#ff0000' };
@@ -81,5 +81,38 @@ describe('computeMonthlyReport', () => {
     const result = computeMonthlyReport(logs, [hourlyJob], 2026, 5);
     expect(result.stats[0].totalMinutes).toBe(0);
     expect(result.stats[0].totalAmount).toBe(120);
+  });
+});
+
+describe('computeDailyBreakdown', () => {
+  it('補齊整月並依工作項目堆疊，排除已刪除工作', () => {
+    const logs = [
+      makeLog({ id: 'a', jobId: 'j1', date: '2026-11-05', amount: 500 }),
+      makeLog({ id: 'b', jobId: 'j2', date: '2026-11-05', amount: 300 }),
+      makeLog({ id: 'c', jobId: 'gone', date: '2026-11-05', amount: 999 }),
+      makeLog({ id: 'd', jobId: 'j1', date: '2026-10-05', amount: 100 }),
+    ];
+    const days = computeDailyBreakdown(logs, [hourlyJob, pieceJob], 2026, 11);
+    expect(days).toHaveLength(30);
+    expect(days[4]).toEqual({ day: 5, total: 800, byJob: { j1: 500, j2: 300 } });
+    expect(days[days.length - 1].total).toBe(0);
+    expect(days[0].total).toBe(0);
+  });
+
+  it('二月天數正確', () => {
+    expect(computeDailyBreakdown([], [hourlyJob], 2028, 2)).toHaveLength(29);
+  });
+});
+
+describe('computeMonthlyTrend', () => {
+  it('以選擇月份為終點跨年回推 6 個月，無紀錄補 0', () => {
+    const logs = [
+      makeLog({ id: 'a', jobId: 'j1', date: '2025-10-02', amount: 100 }),
+      makeLog({ id: 'b', jobId: 'j1', date: '2026-03-02', amount: 200 }),
+      makeLog({ id: 'c', jobId: 'j1', date: '2026-04-02', amount: 999 }),
+    ];
+    const trend = computeMonthlyTrend(logs, [hourlyJob], 2026, 3);
+    expect(trend.map(t => `${t.year}-${t.month}`)).toEqual(['2025-10', '2025-11', '2025-12', '2026-1', '2026-2', '2026-3']);
+    expect(trend.map(t => t.total)).toEqual([100, 0, 0, 0, 0, 200]);
   });
 });
